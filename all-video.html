@@ -1,0 +1,4639 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToolEV</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23c41230'/><stop offset='1' stop-color='%23e8364f'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --border: #e8e2d9;
+        --border-focus: #c41230;
+        --purple: #c41230;
+        --purple-dark: #a50e27;
+        --purple-light: #fdf0f2;
+        --purple-mid: #f9d0d6;
+        --green: #16a34a;
+        --green-light: #dcfce7;
+        --text: #1a1714;
+        --text-muted: #6b6560;
+        --text-subtle: #a8a29e;
+        --shadow-sm:
+          0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+        --shadow-md:
+          0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+        --shadow-hover:
+          0 8px 24px rgba(196, 18, 48, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+        --radius: 12px;
+        --radius-sm: 8px;
+        --radius-xs: 6px;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          'Space Grotesk',
+          -apple-system,
+          sans-serif;
+        font-size: 14px;
+        height: 99dvh; /* trừ thanh URL của trình duyệt mobile (iOS Safari) */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      /* ── Header ─────────────────────────────────────────── */
+      header {
+        height: 58px;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: inherit;
+        transition: opacity 0.15s;
+      }
+      .logo-home:hover {
+        opacity: 0.7;
+      }
+      .logo-mark {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #c41230, #e8364f);
+        border-radius: var(--radius-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .logo-mark svg {
+        width: 16px;
+        height: 16px;
+        color: #fff;
+      }
+      .logo-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.3px;
+      }
+      .logo-sep {
+        color: var(--border);
+        font-size: 18px;
+        font-weight: 300;
+        margin: 0 2px;
+      }
+      .logo-folder {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--purple);
+        background: var(--purple-light);
+        padding: 2px 10px;
+        border-radius: 20px;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: none;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .count-badge {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--purple);
+        background: var(--purple-light);
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: none;
+      }
+
+      .btn-ghost {
+        height: 36px;
+        padding: 0 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+      .btn-ghost:hover {
+        background: var(--bg);
+        color: var(--text);
+        border-color: #c4b5fd;
+      }
+      .btn-ghost.visible {
+        display: flex;
+      }
+
+      .btn-primary {
+        height: 36px;
+        padding: 0 16px;
+        border: none;
+        border-radius: var(--radius-sm);
+        background: var(--purple);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+      }
+      .btn-primary:hover {
+        background: var(--purple-dark);
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        transform: translateY(-1px);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-primary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ── Toolbar ─────────────────────────────────────────── */
+      .toolbar {
+        padding: 20px 32px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .search-wrap {
+        flex: 1;
+        max-width: 340px;
+        position: relative;
+      }
+      .search-wrap svg {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 15px;
+        height: 15px;
+        color: var(--text-subtle);
+        pointer-events: none;
+      }
+      .search {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px 0 34px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-family: inherit;
+        color: var(--text);
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      .search::placeholder {
+        color: var(--text-subtle);
+      }
+      .search:focus {
+        border-color: var(--border-focus);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+      }
+
+      .sort-select {
+        height: 38px;
+        padding: 0 30px 0 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-family: inherit;
+        color: var(--text-muted);
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        transition: border-color 0.15s;
+      }
+      .sort-select:focus {
+        border-color: var(--border-focus);
+        outline: none;
+      }
+
+      /* ── Banner ─────────────────────────────────────────── */
+      .banner {
+        margin: 0 32px 8px;
+        padding: 11px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+      .banner.info {
+        background: #eef2ff;
+        border: 1px solid #c7d2fe;
+        color: #4338ca;
+        display: flex;
+      }
+      .banner.warn {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        display: flex;
+      }
+      .banner.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        display: flex;
+      }
+      .banner svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+      }
+
+      /* ── Grid ─────────────────────────────────────────── */
+      #grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 16px;
+        padding: 4px 32px 32px;
+      }
+
+      /* ── Date group header ──────────────────────────────── */
+      .date-group {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 19px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.2px;
+        margin: 18px 0 4px;
+      }
+      .date-group:first-child {
+        margin-top: 0;
+      }
+      .date-group svg {
+        width: 19px;
+        height: 19px;
+        color: var(--purple);
+        flex-shrink: 0;
+      }
+      .date-group .date-count {
+        font-weight: 700;
+        color: var(--purple);
+        font-size: 16px;
+        background: var(--purple-light);
+        padding: 2px 12px;
+        border-radius: 20px;
+      }
+      .date-group::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* category header (sub-level under a date, or top-level in cat mode) */
+      .cat-group {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 11px;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.2px;
+        margin: 14px 0 6px;
+      }
+      .cat-group.top {
+        font-size: 23px;
+        margin: 22px 0 8px;
+      }
+      .cat-group .cat-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .cat-group .cat-count {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 13px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        padding: 2px 12px;
+        border-radius: 20px;
+      }
+      .cat-group::before,
+      .cat-group::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+        opacity: 0.7;
+      }
+
+      /* ── Card ─────────────────────────────────────────── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          transform 0.18s,
+          box-shadow 0.18s,
+          border-color 0.18s;
+        box-shadow: var(--shadow-sm);
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+        border-color: #c4b5fd;
+      }
+
+      .thumb-wrap {
+        aspect-ratio: 16/9;
+        background: var(--bg);
+        position: relative;
+        overflow: hidden;
+        contain: layout paint;
+        clip-path: inset(0);
+      }
+      .thumb-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s;
+      }
+      .card:hover .thumb-wrap img {
+        transform: scale(1.04);
+      }
+
+      .thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+        background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 100%);
+      }
+      .thumb-placeholder svg {
+        width: 28px;
+        height: 28px;
+        color: #c4b5fd;
+      }
+      .thumb-placeholder span {
+        font-size: 11px;
+        color: var(--text-subtle);
+        font-weight: 500;
+      }
+
+      .badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 20px;
+      }
+      .badge-mp4 {
+        background: var(--green-light);
+        color: var(--green);
+      }
+      .badge-html {
+        background: var(--purple-light);
+        color: var(--purple);
+      }
+
+      .card-body {
+        padding: 12px 13px 12px;
+      }
+
+      .card-title {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.4;
+        letter-spacing: -0.1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 4px;
+      }
+
+      .card-topic {
+        font-size: 11px;
+        color: var(--text-subtle);
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 10px;
+      }
+
+      /* Badge style thiết kế — luôn hiển thị (design-style hoặc "AI Generate"). */
+      .card-style {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        max-width: 100%;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--purple);
+        background: var(--purple-light);
+        border: 1px solid var(--purple-mid);
+        padding: 1px 8px 1px 6px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .card-style svg {
+        width: 11px;
+        height: 11px;
+        flex-shrink: 0;
+      }
+      /* "AI Generate" — tông trung tính để phân biệt với style brand thật. */
+      .card-style.is-ai {
+        color: var(--text-muted);
+        background: var(--bg);
+        border-color: var(--border);
+      }
+
+      /* footer: date left, action buttons right */
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        border-top: 1px solid var(--border);
+        padding-top: 9px;
+        margin-top: 2px;
+      }
+      .card-date-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      .card-date-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10.5px;
+        color: var(--text-subtle);
+        white-space: nowrap;
+      }
+      .card-date-row svg {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        color: #c4b5fd;
+      }
+      .card-date-val {
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+      .btn-sm {
+        height: 28px;
+        padding: 0 10px;
+        border-radius: var(--radius-xs);
+        font-size: 11px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+      .btn-view {
+        background: var(--bg);
+        color: var(--text-muted);
+        border-color: var(--border);
+      }
+      .btn-view:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+      }
+      .btn-mp4 {
+        background: var(--purple);
+        color: #fff;
+        border-color: var(--purple);
+      }
+      .btn-mp4:hover {
+        background: var(--purple-dark);
+        border-color: var(--purple-dark);
+      }
+      .btn-dictation {
+        background: var(--purple);
+        color: #fff;
+        border-color: var(--purple);
+      }
+      .btn-dictation:hover {
+        background: var(--purple-dark);
+        border-color: var(--purple-dark);
+        color: #fff;
+      }
+
+      /* ── Empty ─────────────────────────────────────────── */
+      .empty {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 80px 20px;
+        background: var(--surface);
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+      }
+      .empty-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--purple-light);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+      }
+      .empty-icon svg {
+        width: 24px;
+        height: 24px;
+        color: var(--purple);
+      }
+      .empty p {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      .empty small {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      /* ── Modal ─────────────────────────────────────────── */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 8, 20, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 100;
+        align-items: center;
+        justify-content: center;
+        padding: 6px;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        width: min(98vw, 720px);
+        height: min(99vh, 1400px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.2),
+          0 4px 16px rgba(124, 58, 237, 0.08);
+        animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes modal-in {
+        from {
+          opacity: 0;
+          transform: scale(0.95) translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .modal-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .modal-close {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-xs);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+      .modal-close:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+      }
+
+      .modal-content {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e3e3e3;
+      }
+
+      /* ── Modal slide nav arrows ─────────────────────────── */
+      .modal-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        transition:
+          background 0.15s,
+          transform 0.15s;
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+      }
+      .modal-nav:hover {
+        background: rgba(0, 0, 0, 0.7);
+      }
+      .modal-nav:active {
+        transform: translateY(-50%) scale(0.9);
+      }
+      .modal-nav-prev {
+        left: 14px;
+      }
+      .modal-nav-next {
+        right: 14px;
+      }
+      .modal-content iframe {
+        height: 100%;
+        width: auto;
+        aspect-ratio: 9/16;
+        max-width: 100%;
+        border: none;
+        display: block;
+        margin-top: -2px;
+      }
+
+      .modal-note {
+        flex-shrink: 0;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--bg);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-muted);
+      }
+      .modal-note ul {
+        margin: 0;
+        padding-left: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .modal-note li::marker {
+        color: var(--purple);
+      }
+      .modal-faq-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 32px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--purple);
+        text-decoration: none;
+        padding: 0 12px;
+        border: 1px solid var(--purple-mid);
+        border-radius: var(--radius-sm);
+        background: var(--purple-light);
+        transition: all 0.15s;
+      }
+      .modal-faq-link:hover {
+        background: var(--purple);
+        color: #fff;
+        border-color: var(--purple);
+      }
+
+      .modal-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 16px;
+        flex-shrink: 0;
+        border-top: 1px solid var(--border);
+      }
+      .btn-md {
+        flex: 0 0 auto;
+        height: 32px;
+        padding: 0 14px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.15s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: 1px solid transparent;
+      }
+      .btn-open-new {
+        background: var(--bg);
+        color: var(--text-muted);
+        border-color: var(--border);
+      }
+      .btn-open-new:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+      }
+      .btn-toggle-view {
+        background: var(--purple);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(196, 18, 48, 0.25);
+      }
+      .btn-toggle-view:hover {
+        background: var(--purple-dark);
+        transform: translateY(-1px);
+      }
+      .btn-toggle-view.active {
+        background: var(--bg);
+        color: var(--text-muted);
+        border-color: var(--border);
+        box-shadow: none;
+      }
+      .btn-toggle-view.active:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+      }
+      .btn-dl-mp4 {
+        background: var(--bg);
+        color: var(--text-muted);
+        border-color: var(--border);
+      }
+      .btn-dl-mp4:hover {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+        transform: translateY(-1px);
+      }
+
+      /* ── iFrame thumbnail ─────────────────────────────── */
+      .thumb-iframe-wrap {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        clip-path: inset(0);
+        background: linear-gradient(160deg, #fdf0f2 0%, #f9d0d6 100%);
+      }
+      .thumb-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1920px;
+        transform-origin: top left;
+        pointer-events: none;
+        border: none;
+        display: block;
+      }
+      .thumb-hint {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--purple);
+        font-size: 11px;
+        font-weight: 600;
+        pointer-events: none;
+        transition: opacity 0.15s;
+      }
+      .thumb-hint svg {
+        width: 26px;
+        height: 26px;
+        opacity: 0.7;
+      }
+      .thumb-iframe-wrap.playing .thumb-hint {
+        opacity: 0;
+      }
+
+      /* ── Pagination ─────────────────────────────────────── */
+      .page-bar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 32px;
+      }
+      .page-bar #perPageSelect {
+        margin-left: auto;
+        flex-shrink: 0;
+      }
+      #pagination {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: end;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+      }
+      #pagination.hidden {
+        display: none;
+      }
+      .page-btns {
+        display: flex;
+        gap: 4px;
+      }
+      .page-btn {
+        height: 32px;
+        min-width: 32px;
+        padding: 0 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xs);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .page-btn:hover:not(:disabled):not(.active) {
+        background: var(--purple-light);
+        color: var(--purple);
+        border-color: #c4b5fd;
+      }
+      .page-btn.active {
+        background: var(--purple);
+        color: #fff;
+        border-color: var(--purple);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+      }
+      .page-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      /* ── Tablet ── */
+      @media (max-width: 900px) {
+        #grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+      }
+
+      /* ── Mobile ── */
+      @media (max-width: 600px) {
+        header {
+          padding: 0 16px;
+          height: 52px;
+        }
+        .logo-name {
+          font-size: 14px;
+        }
+        .logo-sep,
+        .logo-folder {
+          display: none;
+        }
+        .count-badge {
+          display: none !important;
+        }
+
+        .toolbar {
+          padding: 12px 16px 8px;
+          gap: 8px;
+        }
+        .search-wrap {
+          max-width: 100%;
+        }
+        .sort-select {
+          flex-shrink: 0;
+        }
+
+        #grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          padding: 4px 16px 16px;
+        }
+
+        .banner {
+          margin: 0 16px 8px;
+        }
+
+        .page-bar {
+          gap: 8px;
+          padding: 6px 16px max(6px, env(safe-area-inset-bottom));
+        }
+        .page-bar #perPageSelect {
+          margin-left: 0;
+        }
+        #pagination {
+          align-items: center;
+          gap: 8px;
+          height: auto;
+        }
+
+        .modal {
+          width: 100%;
+          max-height: 100dvh;
+          border-radius: 16px 16px 0 0;
+          align-self: flex-end;
+        }
+        .modal-backdrop {
+          padding: 0;
+          align-items: flex-end;
+        }
+      }
+
+      /* ── Small mobile (1 column) ── */
+      @media (max-width: 380px) {
+        #grid { grid-template-columns: 1fr; }
+      }
+
+      /* ══════════════════════════════════════════════════════
+         Câu hỏi nghe (Listening) — style danh sách câu hỏi & chấm điểm
+         ══════════════════════════════════════════════════════ */
+      .iq-backdrop {
+        display: none; position: fixed; inset: 0; z-index: 210;
+        background: rgba(20,4,8,.55); backdrop-filter: blur(3px);
+        align-items: flex-start; justify-content: center; overflow-y: auto;
+        padding: 24px 12px;
+      }
+      .iq-backdrop.open { display: flex; }
+      .iq-sheet {
+        width: 100%; max-width: 760px; background: #fff; border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3); overflow: hidden;
+        margin: auto; display: flex; flex-direction: column;
+      }
+      .iq-head {
+        position: sticky; top: 0; z-index: 2;
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 18px; background: linear-gradient(135deg,#c41230,#e8364f);
+        color: #fff;
+      }
+      .iq-head h2 { font-size: 15px; font-weight: 800; margin: 0; flex: 1;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .iq-score {
+        font-size: 13px; font-weight: 800; background: rgba(255,255,255,.18);
+        padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+      }
+      .iq-close {
+        border: 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer;
+        width: 30px; height: 30px; border-radius: 8px; font-size: 16px; font-weight: 700;
+      }
+      .iq-close:hover { background: rgba(255,255,255,.32); }
+      .iq-video-wrap { background: #000; }
+      .iq-video-wrap video { width: 100%; max-height: 300px; display: block; }
+      .iq-body { padding: 16px 18px 22px; }
+      .iq-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+      .iq-act-btn {
+        border: 1px solid #c41230; background: #c41230; color: #fff; cursor: pointer;
+        font-size: 13px; font-weight: 700; padding: 9px 18px; border-radius: 9px;
+      }
+      .iq-act-btn.ghost { background: #fff; color: #c41230; }
+      .iq-act-btn:hover { filter: brightness(1.05); }
+
+      .iq-card {
+        border: 1px solid #f0d8dc; border-radius: 12px; padding: 14px 16px;
+        margin-bottom: 14px; background: #fffafb;
+      }
+      .iq-card.correct { border-color: #16a34a; background: #f0fdf4; }
+      .iq-card.wrong   { border-color: #dc2626; background: #fef2f2; }
+      .iq-q-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+      .iq-num {
+        font-weight: 800; color: #c41230; font-size: 14px; flex-shrink: 0;
+        min-width: 26px;
+      }
+      .iq-type {
+        font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+        color: #9a6070; background: rgba(196,18,48,.08); padding: 2px 7px; border-radius: 5px;
+      }
+      .iq-listen {
+        margin-left: auto; border: 1px solid #f0d8dc; background: #fff; color: #c41230;
+        cursor: pointer; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px;
+        display: inline-flex; align-items: center; gap: 4px;
+      }
+      .iq-listen:hover { background: #fff0f3; }
+      .iq-qtext { font-size: 14px; color: #1a0508; line-height: 1.5; margin: 6px 0 4px; }
+      .iq-limit { font-size: 11px; font-style: italic; color: #c41230; margin-bottom: 8px; }
+      .iq-opts { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+      .iq-opt {
+        text-align: left; border: 1px solid #e6cfd5; background: #fff; cursor: pointer;
+        font-size: 13px; color: #333; padding: 9px 12px; border-radius: 9px; transition: all .12s;
+      }
+      .iq-opt:hover:not(:disabled) { border-color: #c41230; background: #fff0f3; }
+      .iq-opt:disabled { cursor: default; }
+      .iq-opt.picked-correct { border-color: #16a34a; background: #dcfce7; color: #15803d; font-weight: 700; }
+      .iq-opt.picked-wrong   { border-color: #dc2626; background: #fee2e2; color: #b91c1c; font-weight: 700; }
+      .iq-opt.reveal-correct { border-color: #16a34a; background: #f0fdf4; color: #15803d; font-weight: 700; }
+      .iq-fill-row { display: flex; gap: 8px; margin-top: 8px; }
+      .iq-fill {
+        flex: 1; border: 1px solid #e6cfd5; border-radius: 9px; padding: 9px 12px;
+        font-size: 14px; outline: none;
+      }
+      .iq-fill:focus { border-color: #c41230; box-shadow: 0 0 0 3px rgba(196,18,48,.12); }
+      .iq-fill:disabled { background: #f7eef0; }
+      .iq-check {
+        border: 1px solid #c41230; background: #c41230; color: #fff; cursor: pointer;
+        font-size: 13px; font-weight: 700; padding: 0 16px; border-radius: 9px;
+      }
+      .iq-check:disabled { opacity: .5; cursor: default; }
+      .iq-feedback { margin-top: 9px; font-size: 12.5px; line-height: 1.5; display: none; }
+      .iq-feedback.show { display: block; }
+      .iq-feedback .ok  { color: #15803d; font-weight: 700; }
+      .iq-feedback .no  { color: #b91c1c; font-weight: 700; }
+      .iq-feedback .ans { color: #1a0508; font-weight: 700; }
+      .iq-feedback .ex  { color: #6a3040; font-style: italic; }
+      @media (max-width: 600px) {
+        .iq-backdrop { padding: 0; }
+        .iq-sheet { max-width: 100%; min-height: 100%; border-radius: 0; }
+      }
+
+      /* ══════════════════════════════════════════════════════
+         Dictation Modal
+         ══════════════════════════════════════════════════════ */
+      .dm-backdrop {
+        display: none; position: fixed; inset: 0; z-index: 200;
+        background: #ffffff;
+        flex-direction: column;
+        font-family: 'Space Grotesk', -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Trang detail: bố cục 2 cột — TRÁI (video + controls + transcript),
+         PHẢI (vùng luyện). Topbar & bottom chạy ngang full. */
+      .dm-backdrop.open {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto 1fr auto;
+        grid-template-areas:
+          "topbar  topbar"
+          "video   practice"
+          "ctrls   practice"
+          "tpanel  practice"
+          "tpanel  bottom";
+      }
+      .dm-topbar     { grid-area: topbar; }
+      .dm-video-area { grid-area: video; }
+      .dm-controls   { grid-area: ctrls; }
+      .dm-tpanel     { grid-area: tpanel; }
+      .dm-bottom     { grid-area: bottom; }
+      /* dm-content chỉ là wrapper logic (qmode) — bỏ box để main/qpanel rơi
+         thẳng vào grid ở cột phải. */
+      .dm-content    { display: contents; }
+      .dm-main, .dm-qpanel, .dm-spanel { grid-area: practice; }
+      /* Vạch ngăn 2 cột */
+      .dm-tpanel { border-right: 1px solid #f0e0e4; }
+
+      /* Tab "Câu hỏi nghe" — thay chỗ vùng luyện khi bật, để không cướp phím tắt */
+      .dm-qpanel {
+        display: none; flex: 1; min-width: 0; overflow-y: auto;
+        padding: 16px 20px 28px; flex-direction: column;
+      }
+      .dm-content.qmode .dm-main   { display: none; }
+      .dm-content.qmode .dm-qpanel { display: flex; }
+
+      /* ── Tab "Sắp xếp câu" ── */
+      .dm-spanel {
+        display: none; min-height: 0; overflow-y: auto;
+        padding: 16px 20px 28px; flex-direction: column; gap: 14px;
+      }
+      .dm-content.smode .dm-main   { display: none; }
+      .dm-content.smode .dm-spanel { display: flex; }
+      /* Smode: thay nút gợi ý/điều hướng của dictation ở dm-bottom bằng
+         hành động của bài "Sắp xếp câu". */
+      .dm-bottom-sp, .dm-bottom-q { display: none; align-items: center; gap: 8px; }
+      .dm-backdrop.smode .dm-bottom > .dm-hint-btn { display: none; }
+      /* Smode: hành động (Nghe/Kiểm tra/…) bên TRÁI, nav Trước/Tiếp theo bên PHẢI */
+      .dm-backdrop.smode .dm-bottom-sp { display: flex; order: 1; }
+      .dm-backdrop.smode .dm-bottom > .dm-nav { order: 2; margin-left: auto; }
+      /* Qmode: ẩn nút gợi ý + nav của dictation, hiện hành động câu hỏi nghe */
+      .dm-backdrop.qmode .dm-bottom > .dm-hint-btn,
+      .dm-backdrop.qmode .dm-bottom > .dm-nav { display: none; }
+      .dm-backdrop.qmode .dm-bottom-q { display: flex; }
+      .dm-sp-head { display: flex; align-items: center; gap: 12px; max-width: 860px; }
+      .dm-sp-head h3 { font-size: 16px; font-weight: 800; color: #c41230; margin: 0; flex: 1; }
+      .dm-sp-status {
+        font-size: 12px; font-weight: 700; color: #fff; background: #c41230;
+        padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+      }
+      .dm-sp-status.ok  { background: #16a34a; }
+      .dm-sp-status.bad { background: #dc2626; }
+      .dm-sp-hint { font-size: 12px; color: #9a6070; margin: 0; line-height: 1.5; max-width: 860px; }
+      .dm-sp-answer {
+        min-height: 56px; max-width: 860px;
+        display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
+        padding: 12px; border-radius: 12px;
+        border: 1.5px dashed #f0c4cc; background: #fff7f8;
+      }
+      .dm-sp-answer.ok  { border-color: #86efac; background: #f0fdf4; }
+      .dm-sp-answer.bad { border-color: #fca5a5; background: #fef2f2; }
+      .dm-sp-bank {
+        max-width: 860px;
+        display: flex; flex-wrap: wrap; gap: 8px;
+      }
+      .dm-sp-tok {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 36px; height: 34px; padding: 0 12px;
+        background: #fff0f2; border: 1px solid #f0d8dc;
+        border-radius: 6px; font-size: 14px; font-weight: 600;
+        color: #9a6070; cursor: pointer;
+        font-family: inherit; transition: all .15s; user-select: none;
+      }
+      .dm-sp-tok:hover { background: rgba(196,18,48,.1); border-color: #c41230; color: #c41230; }
+      .dm-sp-tok.in-answer { background: #fff0f2; border-color: #f0c4cc; }
+      .dm-sp-tok.tok-ok  { background: #dcfce7; border-color: #86efac; color: #166534; cursor: default; }
+      .dm-sp-tok.tok-bad { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+      .dm-sp-tok.placed-hidden { visibility: hidden; }
+      .dm-sp-tok.dragging { opacity: .4; }
+      /* Vạch đỏ chèn vào giữa khe 2 từ khi kéo-thả */
+      .dm-sp-caret {
+        width: 3px; align-self: stretch; min-height: 30px;
+        margin: 0 -2px; border-radius: 2px;
+        background: #c41230; pointer-events: none;
+      }
+      .dm-qp-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; max-width: 860px; }
+      .dm-qp-head h3 { font-size: 16px; font-weight: 800; color: #0e7490; margin: 0; flex: 1; }
+      .dm-qp-score {
+        font-size: 13px; font-weight: 800; color: #fff; background: #0e7490;
+        padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+      }
+      .dm-qp-hint { font-size: 12px; color: #9a6070; margin: 0 0 14px; line-height: 1.5; max-width: 860px; }
+      .dm-qpanel #dmQList, .dm-qpanel .iq-actions { max-width: 860px; width: 100%; }
+      .dm-btn.tab-on { background: #0e7490; border-color: #0e7490; color: #fff; }
+
+      .dm-topbar {
+        height: 48px; flex-shrink: 0;
+        display: flex; align-items: center; gap: 9px;
+        padding: 0 18px;
+        background: #ffffff;
+        border-bottom: 1px solid #f0d8dc;
+        overflow: hidden;
+      }
+      .dm-home-btn {
+        height: 30px; padding: 0 12px 0 9px; flex-shrink: 0;
+        display: flex; align-items: center; gap: 5px;
+        background: #c41230; border: 1px solid #c41230; border-radius: 7px;
+        font-family: inherit; font-size: 12px; font-weight: 700; color: #fff;
+        cursor: pointer; white-space: nowrap; transition: all .15s;
+      }
+      .dm-home-btn:hover { background: #a30f28; border-color: #a30f28; }
+      .dm-idx {
+        font-size: 12px; font-weight: 700; color: #c41230;
+        background: rgba(196,18,48,.1); padding: 2px 9px; border-radius: 20px; flex-shrink: 0;
+      }
+      .dm-prog {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 13px; font-weight: 600; color: #9a6070; flex-shrink: 0;
+      }
+      .dm-match { transition: color .2s; }
+      .dm-match.good { color: #16a34a; }
+      .dm-sep { width: 1px; height: 18px; background: #f0d8dc; flex-shrink: 0; }
+      .dm-shortcuts {
+        display: flex; align-items: center; gap: 5px;
+        font-size: 11px; color: #c0a0a8; white-space: nowrap;
+      }
+      .dm-shortcuts kbd {
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 18px; padding: 0 5px;
+        background: #fff0f2; border: 1px solid #f0d8dc; border-radius: 4px;
+        font-size: 10px; font-family: inherit; color: #9a6070;
+      }
+      .dm-right { display: flex; align-items: center; gap: 5px; margin-left: auto; }
+      .dm-btn {
+        height: 28px; padding: 0 9px;
+        background: transparent; border: 1px solid #f0d8dc;
+        border-radius: 6px; font-size: 11px; font-weight: 600;
+        font-family: inherit; color: #9a6070; cursor: pointer;
+        display: flex; align-items: center; gap: 4px;
+        white-space: nowrap; transition: all .15s;
+      }
+      .dm-btn:hover { background: rgba(196,18,48,.08); color: #c41230; border-color: #c41230; }
+      .dm-btn.on { background: rgba(196,18,48,.1); color: #c41230; border-color: #c41230; }
+      .dm-btn-sz { padding: 0 7px; min-width: 28px; font-weight: 700; }
+
+
+      /* ── Video area (top, full-width) ── */
+      .dm-video-area {
+        width: 100%; aspect-ratio: 16 / 9; min-height: 0;
+        background: #000; overflow: hidden; position: relative;
+      }
+      #dmVideoEl { width: 100%; height: 100%; object-fit: contain; display: block; }
+      #dmYtWrap { position: absolute; inset: 0; display: none; }
+      #dmYtWrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+      /* Lớp phủ: đang phát → trong suốt (chỉ chặn hover để giấu title/share của YouTube);
+         tạm dừng → đen kín che toàn bộ branding paused (nút play to, "Video khác", logo). */
+      #dmYtWrap .dm-yt-cover { position: absolute; inset: 0; z-index: 2; cursor: pointer; background: transparent; transition: background .12s; }
+      #dmYtWrap .dm-yt-cover.paused { background: #000; }
+      /* Nút play tam giác của app — chỉ hiện khi tạm dừng */
+      #dmYtWrap .dm-yt-cover.paused::after {
+        content: ''; position: absolute; top: 50%; left: 50%;
+        transform: translate(-40%, -50%);
+        border-left: 28px solid rgba(255,255,255,.92);
+        border-top: 18px solid transparent; border-bottom: 18px solid transparent;
+      }
+
+      /* ── Custom media controls bar ── */
+      .dm-controls {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 14px; background: #1a1a1a; flex-shrink: 0;
+      }
+      .dm-ctrl-btn {
+        width: 30px; height: 30px; flex-shrink: 0;
+        background: transparent; border: none;
+        color: #bbb; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; transition: all .15s;
+      }
+      .dm-ctrl-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+      .dm-ctrl-btn.dm-pp { background: #fff; color: #111; }
+      .dm-ctrl-btn.dm-pp:hover { background: #eee; }
+      .dm-seekbar-wrap {
+        flex: 1; height: 20px;
+        cursor: pointer; position: relative; margin: 0 4px;
+        display: flex; align-items: center;
+      }
+      .dm-seekbar-wrap::before {
+        content: ''; position: absolute; inset: 8px 0;
+        background: #3a3a3a; border-radius: 2px; pointer-events: none;
+      }
+      .dm-seekbar-fill {
+        height: 4px; background: #c41230; border-radius: 2px;
+        width: 0%; pointer-events: none; position: relative; z-index: 1;
+        transition: none;
+      }
+      .dm-time {
+        font-size: 11px; color: #777; white-space: nowrap;
+        font-family: monospace; flex-shrink: 0;
+      }
+      .dm-vol-wrap { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+      .dm-vol-wrap svg { color: #888; flex-shrink: 0; }
+      .dm-vol-slider {
+        -webkit-appearance: none; appearance: none;
+        width: 70px; height: 3px; border-radius: 2px;
+        background: #3a3a3a; outline: none; cursor: pointer;
+      }
+      .dm-vol-slider::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 12px; height: 12px;
+        border-radius: 50%; background: #c41230; cursor: pointer;
+      }
+      .dm-speed-btns { display: flex; gap: 2px; flex-shrink: 0; }
+      .dm-speed-btn {
+        height: 24px; padding: 0 7px;
+        background: transparent; border: 1px solid #3a3a3a;
+        border-radius: 4px; font-size: 10.5px; color: #666;
+        cursor: pointer; font-family: inherit; transition: all .12s;
+      }
+      .dm-speed-btn:hover { border-color: #777; color: #bbb; }
+      .dm-speed-btn.active { background: #c41230; border-color: #c41230; color: #fff; }
+
+      .dm-main {
+        min-height: 0; min-width: 0;
+        display: flex; flex-direction: column;
+        padding: 14px 20px 10px; gap: 11px; overflow-y: auto;
+        color: #1a0508;
+      }
+      .dm-tpanel {
+        min-height: 0; min-width: 0;
+        overflow-y: auto;
+        background: #fdf8f9;
+        padding: 6px 0;
+      }
+      /* Transcript panel header (drag handle + close — only visible on mobile) */
+      .dm-tp-header {
+        display: none;
+        align-items: center; justify-content: space-between;
+        padding: 10px 14px 6px;
+        border-bottom: 1px solid #f0e0e4;
+        flex-shrink: 0;
+      }
+      .dm-tp-title { font-size: 13px; font-weight: 700; color: #c41230; }
+      .dm-tp-close {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: #fff0f2; border: 1px solid #f0d8dc;
+        color: #9a6070; font-size: 13px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        touch-action: manipulation;
+      }
+      /* Backdrop behind transcript overlay on mobile */
+      .dm-tp-backdrop {
+        display: none; position: fixed; inset: 0; z-index: 499;
+        background: rgba(0,0,0,.35);
+      }
+
+      /* touch-action: manipulation removes 300ms tap delay on all interactive elements */
+      .dm-btn, .dm-hint-btn, .dm-nav-btn, .dm-ctrl-btn,
+      .dm-chip, .dm-showall, .dm-speed-btn, .dm-tp-item { touch-action: manipulation; }
+
+      .dm-tp-item {
+        padding: 7px 12px;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+        transition: background .12s, border-color .12s;
+      }
+      .dm-tp-item:hover { background: #fff0f3; }
+      .dm-tp-item.active {
+        background: #fff0f3;
+        border-left-color: #c41230;
+      }
+      .dm-tp-num {
+        font-size: 10px; color: #c41230; margin-bottom: 2px;
+        font-weight: 600; letter-spacing: .3px;
+      }
+      .dm-tp-text {
+        font-size: 11.5px; color: #4a2030; line-height: 1.5;
+        filter: blur(4px); transition: filter .2s; user-select: none;
+      }
+      .dm-tp-item.done .dm-tp-text { filter: none; user-select: text; }
+      .dm-tp-item.active .dm-tp-text { color: #1a0508; font-weight: 500; }
+      .dm-tp-item.done .dm-tp-text { color: #6a3040; }
+      .dm-input {
+        width: 100%; padding: 15px 17px;
+        background: #ffffff; border: 2px solid #f0d8dc;
+        border-radius: 10px; font-size: 18px; font-family: inherit;
+        color: #1a0508; outline: none; caret-color: #c41230;
+        transition: border-color .2s, box-shadow .2s;
+      }
+      .dm-input::placeholder { color: #c0a0a8; }
+      .dm-input:focus {
+        border-color: #c41230;
+        box-shadow: 0 0 0 4px rgba(196,18,48,.12);
+      }
+      .dm-trans {
+        margin-top: 7px; padding: 0 2px;
+        font-size: 13px; color: #9a6070; font-style: italic; line-height: 1.5;
+        transition: opacity .2s;
+      }
+      .dm-trans.hide { opacity: 0; pointer-events: none; }
+
+      .dm-tags { display: none; flex-wrap: wrap; gap: 6px; min-height: 22px; }
+      .dm-tag {
+        display: inline-flex; align-items: center; gap: 4px;
+        height: 22px; padding: 0 9px; border-radius: 20px;
+        font-size: 11px; font-weight: 600;
+      }
+      .dm-tag-proper { background: rgba(196,18,48,.1); color: #c41230; border: 1px solid rgba(196,18,48,.25); }
+      .dm-tag-name   { background: rgba(59,130,246,.1); color: #2563eb; border: 1px solid rgba(59,130,246,.25); }
+
+      .dm-word-section {
+        flex: 1; min-height: 100px;
+        background: #fff8f9; border: 1px solid #f0d8dc;
+        border-radius: 10px; padding: 13px 15px;
+        display: flex; flex-direction: column; gap: 10px;
+      }
+      .dm-ws-hdr { display: flex; align-items: center; justify-content: space-between; }
+      .dm-ws-lbl {
+        display: flex; align-items: center; gap: 5px;
+        font-size: 12px; font-weight: 500; color: #c0a0a8;
+      }
+      .dm-ws-lbl svg { width: 13px; height: 13px; color: #c41230; }
+      .dm-ws-right { display: flex; align-items: center; gap: 8px; }
+      .dm-hidden-count { font-size: 11px; color: #c0a0a8; }
+      .dm-showall {
+        font-size: 11px; font-weight: 600; color: #9a6070;
+        background: transparent; border: 1px solid #f0d8dc;
+        border-radius: 6px; padding: 3px 10px;
+        cursor: pointer; font-family: inherit; transition: all .15s;
+      }
+      .dm-showall:hover { background: rgba(196,18,48,.08); color: #c41230; border-color: #c41230; }
+
+      .dm-grid { display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
+      .dm-chip {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 36px; height: 34px; padding: 0 11px;
+        background: #fff0f2; border: 1px solid #f0d8dc;
+        border-radius: 6px; font-size: 13px; font-weight: 600;
+        color: #d0a8b0; cursor: pointer; letter-spacing: 2.5px;
+        font-family: monospace; transition: all .15s; user-select: none;
+      }
+      .dm-chip:hover:not(.dm-revealed):not(.dm-correct) {
+        background: rgba(196,18,48,.1); border-color: #c41230; color: #c41230;
+      }
+      .dm-chip.dm-hint-first { color: #9a6070; letter-spacing: 1.5px; }
+      .dm-chip.dm-hint-last  { color: #9a6070; letter-spacing: 1.5px; }
+      .dm-chip.dm-hint-both  { color: #9a6070; letter-spacing: 1.5px; }
+      .dm-chip.dm-revealed {
+        color: #166534; letter-spacing: 0; font-family: inherit;
+        background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.35); cursor: default;
+      }
+      .dm-chip.dm-correct {
+        color: #16a34a; letter-spacing: 0; font-family: inherit;
+        background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.4);
+      }
+      .dm-chip.dm-typed-wrong {
+        color: #c41230; letter-spacing: 0; font-family: inherit;
+        background: rgba(196,18,48,.07); border-color: rgba(196,18,48,.3); cursor: default;
+      }
+
+      .dm-bottom {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 24px; background: #ffffff;
+        border-top: 1px solid #f0d8dc; flex-shrink: 0;
+      }
+      .dm-hint-btn {
+        height: 34px; padding: 0 12px;
+        background: #fff0f2; border: 1px solid #f0d8dc;
+        border-radius: 6px; font-size: 12px; font-weight: 600;
+        font-family: inherit; color: #9a6070; cursor: pointer;
+        display: flex; align-items: center; gap: 6px; transition: all .15s;
+      }
+      .dm-hint-btn:hover,
+      .dm-hint-btn.on { background: rgba(196,18,48,.1); color: #c41230; border-color: #c41230; }
+      .dm-hint-btn.on kbd { border-color: #c41230; color: #c41230; }
+      .dm-hint-btn kbd {
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 17px; padding: 0 4px; background: #ffffff;
+        border: 1px solid #f0d8dc; border-radius: 3px;
+        font-size: 9.5px; font-family: inherit; color: #9a6070;
+      }
+      .dm-nav { display: flex; gap: 6px; margin-left: auto; }
+      .dm-nav-btn {
+        height: 34px; padding: 0 13px;
+        background: #ffffff; border: 1px solid #f0d8dc;
+        border-radius: 6px; font-size: 12px; font-weight: 600;
+        font-family: inherit; color: #9a6070; cursor: pointer;
+        display: flex; align-items: center; gap: 5px; transition: all .15s;
+      }
+      .dm-nav-btn:hover:not(:disabled) { background: rgba(196,18,48,.08); color: #fff; border-color: #c41230; }
+      .dm-nav-btn.primary { background: #c41230; color: #fff; border-color: #c41230; }
+      .dm-nav-btn.primary:hover:not(:disabled) { background: #a50e27; }
+      .dm-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+      @media (max-width: 600px) {
+        .dm-shortcuts, .dm-sep { display: none; }
+        /* Mobile: gập về 1 cột — video, controls, vùng luyện xếp dọc;
+           transcript vẫn là bottom-sheet cố định. */
+        .dm-backdrop.open {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto 1fr auto;
+          grid-template-areas:
+            "topbar"
+            "video"
+            "ctrls"
+            "practice"
+            "bottom";
+        }
+        .dm-tpanel { border-right: none; }
+        .dm-video-area { aspect-ratio: auto; height: 30vh; }
+        .dm-vol-wrap { display: none; }
+        .dm-main { padding: 10px 12px 8px; gap: 9px; }
+        .dm-input { font-size: 16px; padding: 12px 13px; }
+
+        /* Topbar: keep 48px, scroll horizontally */
+        .dm-topbar {
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          flex-wrap: nowrap;
+          padding: 0 12px;
+          gap: 7px;
+        }
+        .dm-topbar::-webkit-scrollbar { display: none; }
+        .dm-idx { flex-shrink: 0; }
+        .dm-prog { flex-shrink: 0; }
+        .dm-right { flex-shrink: 0; gap: 5px; }
+
+/* Transcript panel → fixed bottom sheet overlay */
+        .dm-tp-header { display: flex; }
+        .dm-tp-backdrop.open { display: block; }
+        .dm-tpanel {
+          position: fixed !important;
+          bottom: 0; left: 0; right: 0;
+          display: flex !important; flex-direction: column;
+          width: 100% !important; min-width: 0 !important;
+          max-height: 60vh; z-index: 500;
+          border-left: none !important;
+          border-top: 2px solid #f0e0e4;
+          border-radius: 16px 16px 0 0;
+          box-shadow: 0 -4px 24px rgba(0,0,0,.18);
+          padding-bottom: max(8px, env(safe-area-inset-bottom));
+          /* Slide animation thay vì display:none */
+          transform: translateY(110%);
+          transition: transform .28s cubic-bezier(.4,0,.2,1);
+          pointer-events: none;
+        }
+        .dm-tpanel.tp-open {
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+
+        /* Bottom bar: wrap hint buttons 2×2, nav full width */
+        .dm-bottom {
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+        }
+        .dm-hint-btn {
+          flex: 1 1 calc(50% - 3px);
+          font-size: 11px;
+          padding: 0 8px;
+          height: 32px;
+          justify-content: center;
+        }
+        .dm-hint-btn kbd { display: none; }
+        .dm-hint-btn svg { display: none; }
+        .dm-nav {
+          margin-left: 0;
+          width: 100%;
+          gap: 6px;
+        }
+        .dm-nav-btn {
+          flex: 1;
+          justify-content: center;
+          height: 36px;
+        }
+      }
+
+      /* ── Add Video Modal ── */
+      .add-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.48);
+        backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .add-modal-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .add-modal-card {
+        background: var(--surface);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 580px;
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: modal-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .add-modal-header {
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg);
+      }
+      .add-modal-title {
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+      }
+      .add-modal-body {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .add-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .add-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+      .add-input-row {
+        display: flex;
+        gap: 10px;
+      }
+      .add-input {
+        flex: 1;
+        padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        background: var(--surface);
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .add-input:focus {
+        border-color: var(--purple);
+        box-shadow: 0 0 0 3px var(--purple-light);
+      }
+      .add-select {
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        font-size: 13px;
+        font-family: inherit;
+        background: var(--surface);
+        outline: none;
+      }
+      .add-btn-submit {
+        background: linear-gradient(135deg, #c41230, #e8364f);
+        color: #fff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: opacity 0.15s, transform 0.1s;
+      }
+      .add-btn-submit:hover:not(:disabled) {
+        opacity: 0.92;
+        transform: translateY(-1px);
+      }
+      .add-btn-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .progress-container {
+        display: none;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 6px;
+        padding: 16px;
+        background: var(--bg);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+      }
+      .progress-bar-wrap {
+        height: 8px;
+        background: #e2dcd4;
+        border-radius: 99px;
+        overflow: hidden;
+        position: relative;
+      }
+      .progress-bar-inner {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #c41230, #16a34a);
+        border-radius: 99px;
+        transition: width 0.4s ease;
+      }
+      .progress-stepper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .step-item.active {
+        color: var(--purple-dark);
+        font-weight: 600;
+      }
+      .step-item.done {
+        color: var(--green);
+      }
+      .step-icon {
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: bold;
+      }
+      .step-item.pending .step-icon {
+        background: #e2dcd4;
+        color: #888;
+      }
+      .step-item.active .step-icon {
+        background: var(--purple);
+        color: #fff;
+      }
+      .step-item.done .step-icon {
+        background: var(--green);
+        color: #fff;
+      }
+      .progress-logs {
+        max-height: 100px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 11px;
+        background: #1e1b18;
+        color: #92e0a6;
+        padding: 8px 12px;
+        border-radius: 6px;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a class="logo-home" href="all-video.html" title="Về trang chủ">
+          <div class="logo-mark">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+          <span class="logo-name">ToolEV</span>
+        </a>
+        <span class="logo-sep">/</span>
+        <span class="logo-folder" id="folderName"></span>
+      </div>
+      <div class="header-right">
+        <button class="btn-primary" id="addVideoBtn" style="background: linear-gradient(135deg, #c41230, #e8364f); border: none; display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Thêm video
+        </button>
+        <button class="btn-ghost" id="refreshBtn">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          Tải lại
+        </button>
+        <button class="btn-primary" id="openBtn">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+            />
+          </svg>
+          Chọn thư mục
+        </button>
+      </div>
+    </header>
+
+    <div class="banner" id="banner"></div>
+
+    <div class="main-content">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input
+          class="search"
+          type="text"
+          placeholder="Tìm clip..."
+          id="searchInput"
+        />
+      </div>
+      <select class="sort-select" id="sortSelect">
+        <option value="date-desc">Mới nhất</option>
+        <option value="date-asc">Cũ nhất</option>
+        <option value="name-asc">Tên A→Z</option>
+      </select>
+    </div>
+
+      <div id="grid">
+        <div class="empty">
+          <div class="empty-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+              />
+            </svg>
+          </div>
+          <p>Chưa mở thư mục nào</p>
+          <small>Nhấn "Chọn thư mục" để bắt đầu duyệt clip</small>
+        </div>
+      </div>
+    </div>
+    <!-- /main-content -->
+
+    <div class="page-bar">
+      <div id="pagination" class="hidden"></div>
+      <select class="sort-select" id="perPageSelect" title="Số clip mỗi trang">
+        <option value="20">20 / trang</option>
+        <option value="40">40 / trang</option>
+        <option value="80">80 / trang</option>
+        <option value="160">160 / trang</option>
+        <option value="all">Tất cả</option>
+      </select>
+    </div>
+
+    <div class="modal-backdrop" id="modal">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title" id="modalTitle"></div>
+          <button class="modal-close" id="modalClose">✕</button>
+        </div>
+        <div class="modal-content">
+          <button
+            class="modal-nav modal-nav-prev"
+            id="modalPrev"
+            aria-label="Slide trước"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <iframe
+            id="modalFrame"
+            src="about:blank"
+            sandbox="allow-scripts allow-same-origin"
+          ></iframe>
+          <video
+            id="modalVideo"
+            controls
+            playsinline
+            style="
+              display: none;
+              max-height: 100%;
+              max-width: 100%;
+              width: auto;
+              height: auto;
+            "
+          ></video>
+          <button
+            class="modal-nav modal-nav-next"
+            id="modalNext"
+            aria-label="Slide kế"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-note">
+          <ul>
+            <li>
+              Chưa có lồng tiếng nhưng khi xuất ra clip sẽ có lồng tiếng, click
+              vào clip để xem nhanh màn hình kế tiếp
+            </li>
+            <li>
+              Có thể chèn video vào giữa slide, nhưng vì làm nhanh và nhẹ nên
+              đang bỏ video đi.
+            </li>
+          </ul>
+        </div>
+        <div class="modal-actions">
+          <a
+            class="modal-faq-link"
+            href="faq.html"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            Giải đáp thắc mắc
+          </a>
+          <button class="btn-md btn-open-new" id="modalOpenNew">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+            Mở tab mới
+          </button>
+          <button
+            class="btn-md btn-toggle-view"
+            id="modalToggle"
+            style="display: none"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+            Xem MP4
+          </button>
+          <a class="btn-md btn-dl-mp4" id="modalDownload" style="display: none">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+            >
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Tải MP4
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Modal Thêm Video Mới ═══════════════════════════════ -->
+    <div class="add-modal-backdrop" id="addVideoModal">
+      <div class="add-modal-card">
+        <div class="add-modal-header">
+          <div class="add-modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Tạo bài học từ Video URL
+          </div>
+          <button class="modal-close" id="closeAddModalBtn">✕</button>
+        </div>
+        <div class="add-modal-body">
+          <div class="add-input-group">
+            <label class="add-label" for="videoUrlInput">Đường link YouTube hoặc video bất kỳ:</label>
+            <div class="add-input-row">
+              <input class="add-input" id="videoUrlInput" type="text" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" />
+              <button class="btn-ghost" id="pasteUrlBtn" title="Dán từ Clipboard" style="white-space: nowrap;">
+                📋 Dán
+              </button>
+            </div>
+          </div>
+
+          <div class="add-input-row" style="align-items: center; justify-content: space-between;">
+            <div class="add-input-group" style="flex: 1;">
+              <label class="add-label" for="videoLangSelect">Ngôn ngữ transcript:</label>
+              <select class="add-select" id="videoLangSelect">
+                <option value="en">Tiếng Anh (English)</option>
+                <option value="vi">Tiếng Việt (Vietnamese)</option>
+              </select>
+            </div>
+            <button class="add-btn-submit" id="startProcessBtn" style="align-self: flex-end; height: 42px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              Tạo bài học ngay
+            </button>
+          </div>
+
+          <!-- Khung tiến độ thời gian thực -->
+          <div class="progress-container" id="progressContainer">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+              <span id="currentStepName">Đang khởi tạo...</span>
+              <span id="progressPercent" style="color: var(--purple-dark);">0%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-inner" id="progressBarInner"></div>
+            </div>
+            <div class="progress-stepper">
+              <div class="step-item pending" id="step1">
+                <div class="step-icon">1</div>
+                <span>Phân tích thông tin & lấy thumbnail</span>
+              </div>
+              <div class="step-item pending" id="step2">
+                <div class="step-icon">2</div>
+                <span>Bóc tách phụ đề & transcript (YouTube Caption / Whisper Local)</span>
+              </div>
+              <div class="step-item pending" id="step3">
+                <div class="step-icon">3</div>
+                <span>Biên soạn bộ câu hỏi IELTS Listening</span>
+              </div>
+              <div class="step-item pending" id="step4">
+                <div class="step-icon">4</div>
+                <span>Lưu bài học & cập nhật danh sách</span>
+              </div>
+            </div>
+            <div class="progress-logs" id="progressLogs"></div>
+            <button class="btn-primary" id="viewNewLessonBtn" style="display: none; justify-content: center; margin-top: 6px;">
+              🎉 Mở bài học vừa tạo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Dictation Modal ══════════════════════════════════ -->
+    <div class="dm-backdrop" id="dictModal">
+
+      <!-- Video (top, full-width) -->
+      <div class="dm-video-area">
+        <video id="dmVideoEl" preload="auto"></video>
+        <div id="dmYtWrap"></div>
+      </div>
+
+      <!-- Custom media controls -->
+      <div class="dm-controls">
+        <button class="dm-ctrl-btn" id="dmBtnSkipBack" title="Đầu câu">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="2.5" height="16" rx="1"/><path d="M19 5v14l-10-7 10-7z"/></svg>
+        </button>
+        <button class="dm-ctrl-btn" id="dmBtnReplayCtrl" title="Nghe lại (Ctrl)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+        </button>
+        <button class="dm-ctrl-btn dm-pp" id="dmBtnPP" title="Phát/Dừng">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <button class="dm-ctrl-btn" id="dmBtnSkipFwd" title="Câu tiếp">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="16.5" y="4" width="2.5" height="16" rx="1"/><path d="M5 5v14l10-7L5 5z"/></svg>
+        </button>
+        <div class="dm-seekbar-wrap" id="dmSeekWrap">
+          <div class="dm-seekbar-fill" id="dmSeekFill"></div>
+        </div>
+        <span class="dm-time" id="dmTime">0:00 / 0:00</span>
+        <div class="dm-speed-btns">
+          <button class="dm-speed-btn" data-rate="0.5">0.5x</button>
+          <button class="dm-speed-btn" data-rate="0.75">0.75x</button>
+          <button class="dm-speed-btn active" data-rate="1">1x</button>
+          <button class="dm-speed-btn" data-rate="1.25">1.25x</button>
+          <button class="dm-speed-btn" data-rate="1.5">1.5x</button>
+        </div>
+        <div class="dm-vol-wrap" style="display: none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <input type="range" class="dm-vol-slider" id="dmVolSlider" min="0" max="1" step="0.05" value="1">
+        </div>
+      </div>
+
+      <!-- Info / stats bar -->
+      <div class="dm-topbar">
+        <button class="dm-home-btn" id="dmHome" title="Quay lại Home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+          Quay lại Home
+        </button>
+        <span class="dm-idx" id="dmIdx">#1</span>
+        <div class="dm-prog">
+          <span id="dmWords">0/0 từ</span>
+          <span>·</span>
+          <span class="dm-match" id="dmMatch">Khớp: 0%</span>
+        </div>
+        <div class="dm-sep"></div>
+        <div class="dm-shortcuts">
+          <kbd>Tab</kbd> sang câu tiếp
+          <span style="margin:0 3px">·</span>
+          <kbd>Ctrl</kbd> nghe lại
+        </div>
+        <div class="dm-right">
+          <button class="dm-btn" id="dmBtnSave" style="display:none">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Lưu câu
+          </button>
+          <button class="dm-btn dm-btn-sz" id="dmBtnFd">-A</button>
+          <button class="dm-btn dm-btn-sz" id="dmBtnFi">+A</button>
+          <button class="dm-btn on" id="dmBtnAuto">→ Tự động</button>
+          <button class="dm-btn on" id="dmBtnTPanel">Transcript</button>
+          <button class="dm-btn" id="dmBtnTrans">Ẩn dịch</button>
+          <button class="dm-btn" id="dmTabS">🧩 Sắp xếp câu</button>
+          <button class="dm-btn" id="dmTabQ" style="display:none">🎧 Câu hỏi nghe</button>
+        </div>
+      </div>
+
+
+      <!-- Main dictation area + transcript panel -->
+      <div class="dm-content">
+      <div class="dm-main">
+        <div>
+          <input class="dm-input" id="dmInput" type="text"
+            placeholder="Điền câu đã nghe..."
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <div class="dm-trans hide" id="dmTrans"></div>
+        </div>
+        <div class="dm-tags" id="dmTags"></div>
+        <div class="dm-word-section">
+          <div class="dm-ws-hdr">
+            <div class="dm-ws-lbl">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              Nhấn để xem
+            </div>
+            <div class="dm-ws-right">
+              <span class="dm-hidden-count" id="dmHidden"></span>
+              <button class="dm-showall" id="dmBtnShowAll">Hiện tất cả</button>
+            </div>
+          </div>
+          <div class="dm-grid" id="dmGrid"></div>
+        </div>
+      </div>
+
+      <!-- Backdrop for mobile transcript overlay (tap to close) -->
+      <div class="dm-tp-backdrop" id="dmTpBackdrop"></div>
+
+      <!-- Transcript panel (right) -->
+      <div class="dm-tpanel" id="dmTPanel">
+        <div class="dm-tp-header">
+          <span class="dm-tp-title">Transcript</span>
+          <button class="dm-tp-close" id="dmTpClose" aria-label="Đóng">✕</button>
+        </div>
+      </div>
+
+      <!-- Tab "Câu hỏi nghe" (thay vùng luyện khi bật; phím tắt dictation tắt) -->
+      <div class="dm-qpanel" id="dmQPanel">
+        <div class="dm-qp-head">
+          <h3>🎧 Câu hỏi nghe</h3>
+          <span class="dm-qp-score" id="dmQScore">0 / 0</span>
+        </div>
+        <p class="dm-qp-hint">Bấm “▶ nghe” ở mỗi câu để tới đúng đoạn trong video. Chọn / điền đáp án sẽ được chấm ngay.</p>
+        <div id="dmQList"></div>
+      </div>
+
+      <!-- Tab "Sắp xếp câu" (xáo trộn từ → người dùng ghép lại theo transcript) -->
+      <div class="dm-spanel" id="dmSPanel">
+        <div class="dm-sp-head">
+          <h3>🧩 Sắp xếp câu</h3>
+          <span class="dm-sp-status" id="dmSStatus">Chọn từ theo đúng thứ tự</span>
+        </div>
+        <p class="dm-sp-hint">Nghe đoạn, rồi bấm các từ bên dưới để xếp thành câu đúng. Bấm lại từ đã chọn để bỏ ra.</p>
+        <!-- Câu đang ghép -->
+        <div class="dm-sp-answer" id="dmSAnswer"></div>
+        <!-- Kho từ bị xáo trộn -->
+        <div class="dm-sp-bank" id="dmSBank"></div>
+      </div>
+
+      </div><!-- /.dm-content -->
+
+      <!-- Bottom hints & nav -->
+      <div class="dm-bottom">
+        <button class="dm-hint-btn" id="dmBtnFL">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+          Chữ cái đầu <kbd>Opt+H</kbd>
+        </button>
+        <button class="dm-hint-btn" id="dmBtnLL">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+          Chữ cái cuối <kbd>Opt+J</kbd>
+        </button>
+        <div class="dm-nav">
+          <button class="dm-nav-btn" id="dmBtnPrev">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            Trước
+          </button>
+          <button class="dm-nav-btn primary" id="dmBtnNext">
+            Tiếp theo
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <!-- Hành động cho tab "Sắp xếp câu" (chỉ hiện khi ở smode) -->
+        <div class="dm-bottom-sp" id="dmBottomSP">
+          <button class="dm-hint-btn" id="dmSCheck">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="20 6 9 17 4 12"/></svg>
+            Kiểm tra
+          </button>
+          <button class="dm-hint-btn" id="dmSReveal">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Đáp án
+          </button>
+          <button class="dm-hint-btn" id="dmSReset">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+            Làm lại
+          </button>
+        </div>
+        <!-- Hành động cho tab "Câu hỏi nghe" (chỉ hiện khi ở qmode) -->
+        <div class="dm-bottom-q" id="dmBottomQ">
+          <button class="dm-nav-btn primary" id="dmQRevealAll">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Hiện hết đáp án
+          </button>
+          <button class="dm-hint-btn" id="dmQReset">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+            Làm lại
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DB_NAME = 'clip-gallery';
+      const DB_STORE = 'handles';
+      const DB_KEY = 'output-dir';
+      // Smaller default page on phones: 1080×1920 thumbnails decode to ~8MB
+      // each in RAM, so fewer-per-page keeps mobile browsers from OOM-crashing.
+      const DEFAULT_LIMIT = window.matchMedia('(max-width: 640px)').matches
+        ? '40'
+        : '80';
+
+      // ── Category taxonomy (key → label · accent color) ──────────────────
+      const CATS = {
+        'nha-dep': { label: 'Nhà đẹp & Kiến trúc', color: '#16a34a' },
+        'bat-dong-san': { label: 'Bất động sản & Quy hoạch', color: '#c41230' },
+        'thuong-hieu': { label: 'Thương hiệu & Sản phẩm', color: '#d97706' },
+        'cong-nghe': { label: 'Công nghệ & AI', color: '#2563eb' },
+        'thoi-su': { label: 'Thời sự & Đời sống', color: '#db2777' },
+        khac: { label: 'Khác', color: '#6b7280' },
+      };
+      const CAT_ORDER = [
+        'nha-dep',
+        'bat-dong-san',
+        'thuong-hieu',
+        'cong-nghe',
+        'thoi-su',
+        'khac',
+      ];
+      const catKey = (c) =>
+        c.category && CATS[c.category] ? c.category : 'khac';
+      const catLabel = (k) => (CATS[k] ? CATS[k].label : k);
+      const catColor = (k) => (CATS[k] ? CATS[k].color : '#6b7280');
+      const catRank = (k) => {
+        const i = CAT_ORDER.indexOf(k);
+        return i < 0 ? 99 : i;
+      };
+      // Style design: clip không khai báo style → coi như "AI Generate".
+      const styleLabel = (c) => (c.style || '').trim() || 'AI Generate';
+
+      // LIMIT is a string: a numeric page size, or "all"
+      let LIMIT = (() => {
+        const v =
+          new URLSearchParams(location.search).get('limit') || DEFAULT_LIMIT;
+        if (v === 'all') return 'all';
+        const n = parseInt(v, 10);
+        return n > 0 ? String(n) : DEFAULT_LIMIT;
+      })();
+
+      // Resolve the effective page size for a given total count.
+      function pageSize(total) {
+        return LIMIT === 'all' ? Math.max(total, 1) : parseInt(LIMIT, 10);
+      }
+
+      // Ensure ?page and ?limit always present in URL on load
+      (function initParams() {
+        // Trang detail (?slug) không mang page/limit.
+        if (new URLSearchParams(location.search).get('slug')) return;
+        const url = new URL(location.href);
+        let changed = false;
+        if (!url.searchParams.has('page')) {
+          url.searchParams.set('page', '1');
+          changed = true;
+        }
+        if (!url.searchParams.has('limit')) {
+          url.searchParams.set('limit', LIMIT);
+          changed = true;
+        }
+        if (changed) history.replaceState(null, '', url);
+      })();
+
+      let allClips = [];
+      let dirHandle = null;
+
+      // Thumbnails are 1080×1920 → ~8MB decoded each. Keeping all of them
+      // decoded crashes mobile Safari ("A problem repeatedly occurred").
+      // This observer loads a thumbnail only when it nears the viewport and
+      // frees the decoded bitmap (removes src) once it scrolls far away, so
+      // peak image memory stays bounded no matter how many clips there are.
+      const thumbObserver = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            const img = e.target;
+            if (e.isIntersecting) {
+              if (
+                img.dataset.src &&
+                img.getAttribute('src') !== img.dataset.src
+              )
+                img.src = img.dataset.src;
+            } else if (img.getAttribute('src')) {
+              img.removeAttribute('src');
+            }
+          }
+        },
+        { root: null, rootMargin: '600px 0px', threshold: 0 },
+      );
+
+      const grid = document.getElementById('grid');
+      const pagination = document.getElementById('pagination');
+      const searchInput = document.getElementById('searchInput');
+      const sortSelect = document.getElementById('sortSelect');
+      const perPageSelect = document.getElementById('perPageSelect');
+      const openBtn = document.getElementById('openBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const folderName = document.getElementById('folderName');
+      const modal = document.getElementById('modal');
+      const modalFrame = document.getElementById('modalFrame');
+      const modalVideo = document.getElementById('modalVideo');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalOpenNew = document.getElementById('modalOpenNew');
+      const modalDl = document.getElementById('modalDownload');
+      const modalToggle = document.getElementById('modalToggle');
+      const modalPrev = document.getElementById('modalPrev');
+      const modalNext = document.getElementById('modalNext');
+
+      // Drive the slide nav inside the iframe (same contract as its own
+      // arrow-key / click handlers) by dispatching a keydown into it.
+      function slideNav(key) {
+        try {
+          const win = modalFrame.contentWindow;
+          if (!win) return;
+          win.document.dispatchEvent(
+            new win.KeyboardEvent('keydown', { key, bubbles: true }),
+          );
+        } catch (_) {}
+      }
+      modalPrev.addEventListener('click', () => slideNav('ArrowLeft'));
+      modalNext.addEventListener('click', () => slideNav('ArrowRight'));
+
+      // iframe khít stage 9:16 nhưng làm tròn subpixel để hở ~1px → nền body
+      // (tối) của clip lòi ra thành đường đen xấu ở mép. Ép nền document trong
+      // iframe = nền modal (#e3e3e3) để khe đó trùng nền, mất đường đen. iframe
+      // cùng origin nên chèn được. Chỉ đổi nền document, KHÔNG đụng stage clip.
+      modalFrame.addEventListener('load', () => {
+        try {
+          const doc = modalFrame.contentDocument;
+          if (!doc || !doc.head || doc.getElementById('__mx_framebg')) return;
+          const s = doc.createElement('style');
+          s.id = '__mx_framebg';
+          s.textContent = 'html,body{background:#e3e3e3 !important;}';
+          doc.head.appendChild(s);
+        } catch (_) {}
+      });
+      const banner = document.getElementById('banner');
+      let _modalInMp4 = false;
+
+      function getPage() {
+        return Math.max(
+          1,
+          parseInt(new URLSearchParams(location.search).get('page') || '1', 10),
+        );
+      }
+      function setPage(p, replace = false) {
+        const url = new URL(location.href);
+        url.searchParams.set('page', p);
+        url.searchParams.set('limit', LIMIT);
+        replace
+          ? history.replaceState(null, '', url)
+          : history.pushState(null, '', url);
+      }
+
+      // Sync selects with current state (called once on load).
+      perPageSelect.value = LIMIT;
+
+      function openDB() {
+        return new Promise((res, rej) => {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) =>
+            e.target.result.createObjectStore(DB_STORE);
+          req.onsuccess = (e) => res(e.target.result);
+          req.onerror = (e) => rej(e.target.error);
+        });
+      }
+      async function saveHandle(handle) {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, 'readwrite');
+          tx.objectStore(DB_STORE).put(handle, DB_KEY);
+          tx.oncomplete = res;
+          tx.onerror = rej;
+        });
+      }
+      async function loadHandle() {
+        const db = await openDB();
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, 'readonly');
+          const req = tx.objectStore(DB_STORE).get(DB_KEY);
+          req.onsuccess = (e) => res(e.target.result);
+          req.onerror = rej;
+        });
+      }
+
+      function showBanner(type, html) {
+        banner.className = `banner ${type}`;
+        banner.innerHTML = html;
+      }
+      function hideBanner() {
+        banner.className = 'banner';
+      }
+
+      // ──────────────────────────────────────────────────────────────────
+      // HYBRID: 1 file chạy cả R2 lẫn local.
+      //  - Bản deploy: gen-clip-array bồi mảng CLIPS vào (giữa 2 marker) →
+      //    loadEmbedded() chạy, dùng URL tương đối (R2 hoặc file:// cạnh output/).
+      //  - Source giữ CLIPS rỗng → mở local rơi về chọn thư mục (duyệt live).
+      // ──────────────────────────────────────────────────────────────────
+      const CLIPS = [
+        /* CLIPS:START */
+        /* CLIPS:END */
+      ];
+
+      function loadEmbedded() {
+        allClips = CLIPS.filter((c) => c && c.slug).map((c) => {
+          const base = `output/${encodeURIComponent(c.slug)}`;
+          const clip = {
+            slug: c.slug,
+            hasHtml: true,
+            hasMp4: !!c.hasMp4,
+            mp4Name: c.mp4,
+            title: c.title,
+            topic: c.topic,
+            category: c.category,
+            style: c.style,
+            createdAt: c.createdAt,
+            updatedAt: c.createdAt,
+            htmlBlob: `${base}/index.html`,
+          };
+          if (c.thumb) clip.thumbUrl = `${base}/${encodeURIComponent(c.thumb)}`;
+          if (c.hasMp4 && c.mp4)
+            clip.mp4Blob = `${base}/${encodeURIComponent(c.mp4)}`;
+          return clip;
+        });
+        openBtn.style.display = 'none';
+        refreshBtn.classList.remove('visible');
+        folderName.style.display = 'none';
+        hideBanner();
+        // Hoãn 1 microtask: nhánh CLIPS nhúng chạy đồng bộ trước khi các const
+        // (dmModal, dmPlayer…) khởi tạo → tránh lỗi TDZ khi router mở detail.
+        queueMicrotask(applyRoute);
+      }
+
+      (async () => {
+        // Có dữ liệu nhúng → dùng luôn.
+        if (CLIPS.filter((c) => c && c.slug).length) {
+          loadEmbedded();
+          return;
+        }
+
+        // R2 mode: khi chạy từ r2.dev, domain riêng, hoặc localhost → tự load manifest
+        const isR2 = window.location.hostname.includes('r2.dev') ||
+                     window.location.hostname.includes('cloudflare') ||
+                     window.location.hostname.includes('mangox.dev') ||
+                     window.location.hostname === 'localhost' ||
+                     window.location.hostname === '127.0.0.1';
+        if (isR2) {
+          try {
+            const manifest = await fetch('./manifest.json').then(r => r.json());
+            const origin = window.location.origin;
+            const fixUrl = u => u ? u.replace(/^https?:\/\/[^/]+/, origin) : u;
+            allClips = manifest.map(c => ({
+              ...c,
+              mp4Url: fixUrl(c.mp4Url),
+              thumbUrl: fixUrl(c.thumbUrl),
+              transcriptUrls: c.transcriptUrls ? c.transcriptUrls.map(fixUrl) : c.transcriptUrls,
+              hasMp4: !!c.mp4Url,
+              hasHtml: false,
+            }));
+            openBtn.style.display = 'none';
+            refreshBtn.classList.remove('visible');
+            hideBanner();
+            applyRoute();
+            return;
+          } catch (e) { console.warn('manifest.json không tải được', e); }
+        }
+
+        if (!('showDirectoryPicker' in window)) {
+          if (!window.location.protocol.startsWith('http')) {
+            showBanner(
+              'error',
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>' +
+                '<span>Trình duyệt không hỗ trợ. Dùng <strong>Chrome</strong> hoặc <strong>Edge</strong> mới nhất.</span>',
+            );
+            openBtn.disabled = true;
+            return;
+          }
+        }
+        try {
+          const stored = await loadHandle();
+          if (stored) {
+            const perm = await stored.queryPermission({ mode: 'read' });
+            if (perm === 'granted') {
+              dirHandle = stored;
+              await scan();
+              return;
+            } else if (perm === 'prompt') {
+              dirHandle = stored;
+              openBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg> Mở lại "${stored.name}"`;
+              openBtn.dataset.reopen = '1';
+            }
+          }
+          if (window.location.protocol.startsWith('http')) {
+            await scan();
+          }
+        } catch (e) {
+          if (window.location.protocol.startsWith('http')) {
+            await scan();
+          }
+        }
+      })();
+
+      openBtn.addEventListener('click', async () => {
+        try {
+          if (openBtn.dataset.reopen === '1' && dirHandle) {
+            // Có handle cũ → chỉ cần xin lại quyền, không cần chọn lại thư mục
+            const perm = await dirHandle.requestPermission({ mode: 'read' });
+            if (perm === 'granted') { delete openBtn.dataset.reopen; setPage(1, true); await scan(); }
+            return;
+          }
+          const handle = await window.showDirectoryPicker({ mode: 'read' });
+          dirHandle = handle;
+          await saveHandle(handle);
+          setPage(1, true);
+          await scan();
+        } catch (e) {
+          if (e.name !== 'AbortError') console.error(e);
+        }
+      });
+
+      async function scan() {
+        if (!dirHandle) {
+          if (window.location.protocol.startsWith('http')) {
+            try {
+              const res = await fetch('/api/videos');
+              if (res.ok) {
+                const data = await res.json();
+                allClips = data.map(c => ({
+                  ...c,
+                  transcriptUrls: c.partsUrl ? [c.partsUrl] : null
+                }));
+                folderName.textContent = "output";
+                folderName.style.display = '';
+                refreshBtn.classList.add('visible');
+                hideBanner();
+                applyRoute();
+                return;
+              }
+            } catch (e) {
+              console.warn('API fetch /api/videos failed', e);
+            }
+          }
+          return;
+        }
+        folderName.textContent = dirHandle.name;
+        folderName.style.display = '';
+        openBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg> Đổi thư mục`;
+        refreshBtn.classList.add('visible');
+        hideBanner();
+
+        allClips = [];
+
+        // Pass 1: phân loại tất cả entries
+        const rootMp4s = [];    // { name, entry } — file mp4 trực tiếp trong root
+        const partsDirs = {};   // dirName -> entry  — thư mục *_parts (chỉ dùng cho transcript)
+        const subDirs = [];     // { name, entry }   — các thư mục khác (HTML clips)
+
+        for await (const [name, entry] of dirHandle.entries()) {
+          if (entry.kind === 'file' && name.toLowerCase().endsWith('.mp4')) {
+            rootMp4s.push({ name, entry });
+          } else if (entry.kind === 'directory') {
+            if (name.endsWith('_parts')) {
+              partsDirs[name] = entry;
+            } else {
+              subDirs.push({ name, entry });
+            }
+          }
+        }
+
+        // Pass 2a: root mp4 → hiển thị thành gallery card, link với _parts/ nếu có
+        for (const { name, entry } of rootMp4s) {
+          const clip = {
+            slug: name.replace(/\.mp4$/i, ''),
+            hasHtml: false, hasMp4: true,
+            mp4Name: name,
+            title: name.replace(/\.mp4$/i, ''),
+          };
+          try {
+            const file = await entry.getFile();
+            clip.mp4Blob = URL.createObjectURL(file);
+            clip.createdAt = file.lastModified;
+            clip.updatedAt = file.lastModified;
+          } catch {}
+
+          // Tìm thumbnail _thumb.jpg cạnh file mp4
+          try {
+            const thumbName = name.replace(/\.mp4$/i, '_thumb.jpg');
+            const thumbEntry = await dirHandle.getFileHandle(thumbName);
+            const thumbFile = await thumbEntry.getFile();
+            clip.thumbUrl = URL.createObjectURL(thumbFile);
+          } catch {}
+
+          // Tìm _parts/ dir tương ứng (để merge transcript khi luyện dictation)
+          const partsKey = findPartsDir(name, Object.keys(partsDirs));
+          if (partsKey) {
+            clip.hasTranscript = true;
+            clip.partsDir = partsKey;
+          } else {
+            // Fallback: tìm file _transcript.json ngang hàng (single-file transcript)
+            try {
+              const trName = name.replace(/\.mp4$/i, '_transcript.json');
+              await dirHandle.getFileHandle(trName);
+              clip.hasTranscript = true;
+              clip.transcriptName = trName;
+            } catch {}
+          }
+          allClips.push(clip);
+        }
+
+        // Pass 2b: subdirs — hỗ trợ cả cấu trúc mới (video.mp4) lẫn cũ (index.html)
+        for (const { name, entry } of subDirs) {
+          let hasHtml = false, hasVideoMp4 = false, thumbName = null, hasPartsDir = false, hasIelts = false;
+          const mp4Files = [];
+          for await (const [fname, fentry] of entry.entries()) {
+            if (fname === 'index.html') hasHtml = true;
+            if (fname === 'video.mp4') hasVideoMp4 = true;
+            if (fname === 'thumb.jpg') thumbName = 'thumb.jpg';
+            if (fname.toLowerCase().endsWith('.mp4')) mp4Files.push(fname);
+            if (fname.match(/-(thumbnail)\.(jpg|png|webp)$/i)) thumbName = fname;
+            if (fname === 'parts' && fentry.kind === 'directory') hasPartsDir = true;
+            if (fname === 'ielts_listening.json') hasIelts = true;
+          }
+
+          // Cấu trúc mới: output/<slug>/video.mp4
+          if (hasVideoMp4) {
+            const sub = await dirHandle.getDirectoryHandle(name);
+            const clip = { slug: name, hasHtml: false, hasMp4: true, mp4Name: 'video.mp4',
+                           title: name.replace(/_/g, ' ') };
+            try {
+              const mp4File = await (await sub.getFileHandle('video.mp4')).getFile();
+              clip.mp4Blob = URL.createObjectURL(mp4File);
+              clip.createdAt = mp4File.lastModified;
+              clip.updatedAt = mp4File.lastModified;
+            } catch {}
+            try {
+              if (thumbName) {
+                const f = await (await sub.getFileHandle(thumbName)).getFile();
+                clip.thumbUrl = URL.createObjectURL(f);
+              }
+            } catch {}
+            if (hasPartsDir) {
+              clip.hasTranscript = true;
+              clip.partsSubDir = name; // dùng để load transcript khi luyện dictation
+              clip._subDirHandle = sub;
+            }
+            if (hasIelts) {
+              clip.hasIelts = true;
+              clip._subDirHandle = sub; // dùng để load ielts_listening.json
+              try {
+                const ielF = await (await sub.getFileHandle('ielts_listening.json')).getFile();
+                const ielMeta = JSON.parse(await ielF.text());
+                if (ielMeta.title) clip.title = ielMeta.title;
+                if (ielMeta.youtube_id) clip.youtubeId = ielMeta.youtube_id;
+                if (ielMeta.created_at) {
+                  const t = new Date(ielMeta.created_at).getTime();
+                  if (!isNaN(t)) { clip.createdAt = t; clip.updatedAt = t; }
+                }
+              } catch {}
+            }
+            allClips.push(clip);
+            continue;
+          }
+
+          // Cấu trúc YouTube-only: KHÔNG có video.mp4 nhưng có ielts (youtube_id)
+          // và/hoặc parts/ → vẫn hiện & xem được, phát qua YouTube IFrame.
+          if (!hasHtml && (hasIelts || hasPartsDir)) {
+            const sub = await dirHandle.getDirectoryHandle(name);
+            const clip = { slug: name, hasHtml: false, hasMp4: false,
+                           title: name.replace(/_/g, ' ') };
+            let ytId = null;
+            if (hasIelts) {
+              clip.hasIelts = true;
+              clip._subDirHandle = sub;
+              try {
+                const ielF = await (await sub.getFileHandle('ielts_listening.json')).getFile();
+                const ielMeta = JSON.parse(await ielF.text());
+                if (ielMeta.title) clip.title = ielMeta.title;
+                if (ielMeta.youtube_id) ytId = ielMeta.youtube_id;
+                if (ielMeta.created_at) {
+                  const t = new Date(ielMeta.created_at).getTime();
+                  if (!isNaN(t)) { clip.createdAt = t; clip.updatedAt = t; }
+                }
+              } catch {}
+            }
+            if (ytId) clip.youtubeId = ytId;
+            if (hasPartsDir) {
+              clip.hasTranscript = true;
+              clip.partsSubDir = name;
+              clip._subDirHandle = sub;
+            }
+            // thumbnail: ưu tiên thumb.jpg local, không có thì lấy thumbnail YouTube
+            try {
+              if (thumbName) {
+                const f = await (await sub.getFileHandle(thumbName)).getFile();
+                clip.thumbUrl = URL.createObjectURL(f);
+              } else if (ytId) {
+                clip.thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+              }
+            } catch {}
+            // chỉ thêm nếu thực sự xem được (có YouTube hoặc có transcript)
+            if (clip.youtubeId || clip.hasTranscript) allClips.push(clip);
+            continue;
+          }
+
+          // Cấu trúc cũ: output/<slug>/index.html
+          if (!hasHtml) continue;
+
+          const sub = await dirHandle.getDirectoryHandle(name);
+          const clip = { slug: name, hasHtml: true };
+          if (mp4Files.length) { clip.hasMp4 = true; clip.mp4Name = mp4Files[0]; }
+          try {
+            if (thumbName) {
+              const f = await (await sub.getFileHandle(thumbName)).getFile();
+              clip.thumbUrl = URL.createObjectURL(f);
+            }
+            const htmlFile = await (await sub.getFileHandle('index.html')).getFile();
+            clip.htmlBlob = URL.createObjectURL(htmlFile);
+            clip.createdAt = htmlFile.lastModified;
+            clip.updatedAt = htmlFile.lastModified;
+            try {
+              const metaFile = await (await sub.getFileHandle('metadata.json')).getFile();
+              const meta = JSON.parse(await metaFile.text());
+              if (meta.title) clip.title = meta.title;
+              if (meta.topic) clip.topic = meta.topic;
+              if (meta.category) clip.category = meta.category;
+              if (meta.style) clip.style = meta.style;
+              if (meta.createdAt) clip.createdAt = new Date(meta.createdAt).getTime();
+              if (meta.updatedAt) clip.updatedAt = new Date(meta.updatedAt).getTime();
+            } catch {}
+            if (clip.hasMp4) {
+              const mp4File = await (await sub.getFileHandle(clip.mp4Name)).getFile();
+              clip.mp4Blob = URL.createObjectURL(mp4File);
+            }
+          } catch {}
+          allClips.push(clip);
+        }
+
+        applyRoute();
+      }
+
+      // Tìm thư mục _parts/ phù hợp nhất cho một file mp4.
+      // Nếu chỉ có 1 → dùng luôn. Nếu nhiều → match theo prefix chung dài nhất.
+      function findPartsDir(mp4Name, partsDirNames) {
+        if (!partsDirNames.length) return null;
+        if (partsDirNames.length === 1) return partsDirNames[0];
+        const base = mp4Name.replace(/\.mp4$/i, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        let best = null, bestLen = -1;
+        for (const k of partsDirNames) {
+          const kBase = k.replace(/_parts$/, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          let len = 0;
+          while (len < base.length && len < kBase.length && base[len] === kBase[len]) len++;
+          if (len > bestLen) { bestLen = len; best = k; }
+        }
+        return best || partsDirNames[0];
+      }
+
+      function fmtDate(ts) {
+        if (!ts) return '';
+        return new Date(ts).toLocaleDateString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      }
+
+      // "25/05/2026" → "Ngày 25/5/2026" (header label for date groups)
+      function groupLabel(key) {
+        if (key === 'Không rõ ngày') return key;
+        const [d, m, y] = key.split('/');
+        return `Ngày ${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
+      }
+
+      function filtered() {
+        const q = searchInput.value.toLowerCase().trim();
+        let list = allClips.filter((c) => {
+          if (!q) return true;
+          return (
+            c.slug.toLowerCase().includes(q) ||
+            (c.title || '').toLowerCase().includes(q)
+          );
+        });
+        const s = sortSelect.value;
+        if (s === 'date-desc') list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (s === 'date-asc')  list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        if (s === 'name-asc')  list.sort((a, b) => a.slug.localeCompare(b.slug));
+        return list;
+      }
+
+      function render() {
+        const list = filtered();
+        const PAGE_SIZE = pageSize(list.length);
+        const page = getPage();
+        const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+        const safePage = Math.min(page, totalPages);
+        if (safePage !== page) setPage(safePage, true);
+
+        const start = (safePage - 1) * PAGE_SIZE;
+        const pageItems = list.slice(start, start + PAGE_SIZE);
+
+        if (!list.length) {
+          grid.innerHTML = `<div class="empty">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <p>${allClips.length ? 'Không tìm thấy clip nào' : 'Thư mục trống'}</p>
+      <small>${allClips.length ? 'Thử từ khoá khác' : 'Chưa có clip nào được tạo'}</small>
+    </div>`;
+          pagination.className = 'hidden';
+          return;
+        }
+
+        const cardsHtml = pageItems.map((c, i) => {
+          const idx = start + i;
+          const displayTitle = c.title || c.slug.replace(/-/g, ' ');
+          const createdStr = fmtDate(c.createdAt);
+          const updatedStr = fmtDate(c.updatedAt);
+          const showUpdated = c.updatedAt && c.updatedAt !== c.createdAt;
+
+          const thumb = c.thumbUrl
+            ? `<img class="lazy-thumb" data-src="${c.thumbUrl}" alt="${c.slug}" decoding="async">`
+            : c.htmlBlob
+              ? `<div class="thumb-iframe-wrap" data-html="${c.htmlBlob}">
+           <iframe class="thumb-iframe" sandbox="allow-scripts allow-same-origin" tabindex="-1"></iframe>
+           <div class="thumb-hint">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+             <span>Hover để xem</span>
+           </div>
+         </div>`
+              : `<div class="thumb-placeholder">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+           <span>${c.mp4Name || 'MP4'}</span>
+         </div>`;
+
+          return `
+    <div class="card" onclick="openClip(${idx})" onmouseenter="previewOn(this)" onmouseleave="previewOff(this)">
+      <div class="thumb-wrap">
+        ${thumb}
+        <span class="badge ${c.hasMp4 ? 'badge-mp4' : 'badge-html'}">${c.hasMp4 ? 'MP4' : (c.youtubeId ? 'YT' : 'HTML')}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title" title="${displayTitle}">${displayTitle}</div>
+        ${c.topic ? `<div class="card-topic" title="${c.topic}">${c.topic}</div>` : `<div class="card-topic">${c.slug}</div>`}
+        <div class="card-footer">
+          <div class="card-date-info">
+            ${
+              createdStr
+                ? `<div class="card-date-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span class="card-date-val">${createdStr}</span>
+            </div>`
+                : ''
+            }
+            ${
+              showUpdated
+                ? `<div class="card-date-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span class="card-date-val">${updatedStr}</span>
+            </div>`
+                : ''
+            }
+          </div>
+          <div class="card-actions">
+            <button class="btn-sm btn-view" onclick="event.stopPropagation();openClip(${idx})">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Xem
+            </button>
+            ${
+              c.hasTranscript
+                ? `<button class="btn-sm btn-dictation" onclick="event.stopPropagation();openDictation(${idx})">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+              Luyện
+            </button>`
+                : ''
+            }
+          </div>
+        </div>
+      </div>
+    </div>`;
+        });
+
+        grid.innerHTML = cardsHtml.join('');
+
+        requestAnimationFrame(() => {
+          grid.querySelectorAll('.thumb-iframe-wrap').forEach((wrap) => {
+            const scale = wrap.offsetWidth / 1080;
+            wrap.querySelector('.thumb-iframe').style.transform =
+              `scale(${scale})`;
+          });
+          // Re-arm lazy load/unload for the freshly rendered thumbnails.
+          thumbObserver.disconnect();
+          grid
+            .querySelectorAll('img.lazy-thumb')
+            .forEach((img) => thumbObserver.observe(img));
+        });
+
+        renderPagination(safePage, totalPages, list.length, PAGE_SIZE);
+      }
+
+      function renderPagination(page, total, count, PAGE_SIZE) {
+        if (total <= 1) {
+          pagination.className = 'hidden';
+          return;
+        }
+        pagination.className = '';
+
+        const start = (page - 1) * PAGE_SIZE + 1;
+        const end = Math.min(page * PAGE_SIZE, count);
+        const pages = new Set(
+          [1, total, page, page - 1, page + 1].filter(
+            (p) => p >= 1 && p <= total,
+          ),
+        );
+        const sorted = [...pages].sort((a, b) => a - b);
+        let btns = '',
+          prev = 0;
+        for (const p of sorted) {
+          if (p - prev > 1)
+            btns += `<span class="page-btn" style="cursor:default;pointer-events:none">…</span>`;
+          btns += `<button class="page-btn${p === page ? ' active' : ''}" onclick="goPage(${p})">${p}</button>`;
+          prev = p;
+        }
+
+        pagination.innerHTML = `
+    <div class="page-btns">
+      <button class="page-btn" onclick="goPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹</button>
+      ${btns}
+      <button class="page-btn" onclick="goPage(${page + 1})" ${page >= total ? 'disabled' : ''}>›</button>
+    </div>`;
+      }
+
+      function goPage(p) {
+        setPage(p);
+        render();
+        document
+          .querySelector('.main-content')
+          .scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.addEventListener('popstate', applyRoute);
+
+      // Lazy preview: only the hovered card's iframe loads & plays.
+      // Skip on touch devices — there `mouseenter` fires on tap and never
+      // pairs with `mouseleave`, so the heavy animated iframe would load and
+      // keep running in the background, piling up memory until the tab crashes.
+      const CAN_HOVER = window.matchMedia('(hover: hover)').matches;
+      function previewOn(card) {
+        if (!CAN_HOVER) return;
+        const wrap = card.querySelector('.thumb-iframe-wrap[data-html]');
+        if (!wrap) return;
+        const iframe = wrap.querySelector('.thumb-iframe');
+        if (iframe && !iframe.src.startsWith('blob:')) {
+          iframe.style.transform = `scale(${wrap.offsetWidth / 1080})`;
+          iframe.src = wrap.dataset.html;
+          wrap.classList.add('playing');
+        }
+      }
+      function previewOff(card) {
+        const wrap = card.querySelector('.thumb-iframe-wrap[data-html]');
+        if (!wrap) return;
+        const iframe = wrap.querySelector('.thumb-iframe');
+        if (iframe) {
+          iframe.src = 'about:blank';
+          wrap.classList.remove('playing');
+        }
+      }
+
+      // Click card / nút "Xem" → mở trang detail (Luyện + Câu hỏi nghe),
+      // KHÔNG mở modal slide nữa. Clip không có transcript thì openDictation tự bỏ qua.
+      function openClip(i) {
+        const c = filtered()[i];
+        if (c && c.hasTranscript) { openDictation(i); return; }
+        // Không có transcript → không có bài luyện/câu hỏi: phát clip như cũ.
+        openModal(i);
+      }
+
+      // ══════════════════════════════════════════════════════
+      // DICTATION ENGINE
+      // ══════════════════════════════════════════════════════
+      let dmSegs = [], dmCur = 0, dmRevealed = new Set();
+      let dmClipSlug = '', dmCompleted = new Set();
+      let dmHintMode = 'none', dmAutoAdv = true, dmShowTrans = false;
+      let dmHFirst = false, dmHLast = false;   // toggle độc lập: chữ cái đầu / cuối
+      let dmFontSize = 18, dmStopFn = null, dmSegEnd = Infinity;
+
+      // ══ Media controller: bọc <video> native HOẶC YouTube IFrame player ══
+      // Phơi đúng tập API mà phần code dưới đang dùng (currentTime/duration/paused/
+      // playbackRate/src/play/pause/addEventListener) nên không phải sửa ~30 chỗ gọi.
+      // Native <video> phát file local (chính xác từng frame, chạy offline).
+      // YouTube IFrame phát qua mạng — currentTime lấy bằng polling ~120ms.
+      function makeMedia(videoEl, ytWrapEl) {
+        const bus = { timeupdate: [], play: [], pause: [], ended: [] };
+        function emit(ev) { (bus[ev] || []).forEach(fn => { try { fn(); } catch (e) {} }); }
+        let mode = 'video';      // 'video' | 'yt'
+        let yt = null;           // YT.Player
+        let ytReadyId = null;    // id chờ tạo player khi API chưa sẵn sàng
+        let poll = null;
+        let srcTag = '';
+
+        // Forward native events → bus (chỉ khi đang ở chế độ video)
+        ['timeupdate', 'play', 'pause', 'ended'].forEach(ev =>
+          videoEl.addEventListener(ev, () => { if (mode === 'video') emit(ev); }));
+
+        function startPoll() {
+          stopPoll();
+          poll = setInterval(() => { if (mode === 'yt' && yt && yt.getCurrentTime) emit('timeupdate'); }, 120);
+        }
+        function stopPoll() { if (poll) { clearInterval(poll); poll = null; } }
+
+        // ── YouTube IFrame API: nạp script 1 lần, hàng đợi tạo player ──
+        function ensureYTApi(cb) {
+          if (window.YT && window.YT.Player) return cb();
+          const prev = window.onYouTubeIframeAPIReady;
+          window.onYouTubeIframeAPIReady = () => { prev && prev(); cb(); };
+          if (!document.getElementById('yt-iframe-api')) {
+            const s = document.createElement('script');
+            s.id = 'yt-iframe-api';
+            s.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(s);
+          }
+        }
+
+        function loadYT(id) {
+          mode = 'yt';
+          srcTag = 'yt:' + id;
+          try { videoEl.pause(); } catch (e) {}
+          videoEl.removeAttribute('src'); try { videoEl.load(); } catch (e) {}
+          videoEl.style.display = 'none';
+          ytWrapEl.style.display = 'block';
+          if (yt && yt.loadVideoById) {
+            yt.loadVideoById(id);
+            try {
+              yt.unloadModule('captions');
+              yt.setOption('captions', 'track', {});
+            } catch (err) {}
+            startPoll();
+            return;
+          }
+          ytReadyId = id;
+          // Tự dựng iframe Y HỆT mã nhúng chính thức của YouTube — quan trọng nhất là
+          // referrerpolicy="strict-origin-when-cross-origin" (thiếu nó, video báo chí/VTV
+          // báo "Video unavailable"). Thêm enablejsapi=1 để IFrame API GẮN vào iframe có
+          // sẵn (thay vì tự dựng div → iframe thiếu referrerpolicy).
+          const httpOrigin = /^https?:$/.test(location.protocol) ? location.origin : undefined;
+          // controls:'0' → ẩn thanh điều khiển native của YouTube (app đã có dm-controls riêng)
+          // cc_load_policy:'0', iv_load_policy:'3' → tắt phụ đề (CC) tự động của YouTube khi học nghe
+          const qs = new URLSearchParams({
+            enablejsapi: '1',
+            rel: '0',
+            modestbranding: '1',
+            playsinline: '1',
+            controls: '0',
+            cc_load_policy: '0',
+            iv_load_policy: '3',
+            disablekb: '1',
+          });
+          if (httpOrigin) qs.set('origin', httpOrigin);
+          const ifr = document.createElement('iframe');
+          ifr.id = 'dmYtMount';
+          ifr.src = `https://www.youtube.com/embed/${id}?${qs.toString()}`;
+          ifr.title = 'YouTube video player';
+          ifr.setAttribute('frameborder', '0');
+          ifr.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+          ifr.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+          ifr.setAttribute('allowfullscreen', '');
+          ytWrapEl.innerHTML = '';
+          ytWrapEl.appendChild(ifr);
+          // Lớp phủ trong suốt: chặn chuột "chạm" iframe → YouTube không bung thanh
+          // title/share ở trên khi rê chuột. Click vào lớp = play/pause (như nút native).
+          const cover = document.createElement('div');
+          cover.className = 'dm-yt-cover paused';   // bắt đầu ở trạng thái che (chưa phát)
+          cover.addEventListener('click', () => {
+            if (!yt || !yt.getPlayerState) return;
+            if (yt.getPlayerState() === 1) yt.pauseVideo(); else yt.playVideo();
+          });
+          ytWrapEl.appendChild(cover);
+          ensureYTApi(() => {
+            if (ytReadyId !== id) return;
+            yt = new YT.Player(ifr, {
+              events: {
+                onReady: e => {
+                  try {
+                    e.target.unloadModule('captions');
+                    e.target.setOption('captions', 'track', {});
+                  } catch (err) {}
+                },
+                onStateChange: e => {
+                  try {
+                    e.target.unloadModule('captions');
+                    e.target.setOption('captions', 'track', {});
+                  } catch (err) {}
+                  if (e.data === YT.PlayerState.PLAYING) { emit('play'); cover.classList.remove('paused'); }
+                  // Dừng/stop giữa chừng → giữ lớp phủ TRONG SUỐT để lộ đúng khung
+                  // hình hiện tại (không che đen). Vẫn chặn hover nên YouTube không
+                  // bung title/share.
+                  else if (e.data === YT.PlayerState.PAUSED) { emit('pause'); cover.classList.remove('paused'); }
+                  // Hết video → che đen để giấu lưới "video liên quan".
+                  else if (e.data === YT.PlayerState.ENDED) { emit('pause'); emit('ended'); cover.classList.add('paused'); }
+                },
+              },
+            });
+            startPoll();
+          });
+        }
+
+        function loadVid(src) {
+          mode = 'video';
+          srcTag = src || '';
+          stopPoll();
+          ytReadyId = null;
+          ytWrapEl.style.display = 'none';
+          videoEl.style.display = 'block';
+          videoEl.src = src;
+        }
+
+        return {
+          el: videoEl,
+          get isYT() { return mode === 'yt'; },
+          get currentTime() { return mode === 'yt' ? (yt && yt.getCurrentTime ? yt.getCurrentTime() : 0) : videoEl.currentTime; },
+          set currentTime(t) { if (mode === 'yt') { if (yt && yt.seekTo) yt.seekTo(t, true); } else videoEl.currentTime = t; },
+          get duration() { return mode === 'yt' ? (yt && yt.getDuration ? yt.getDuration() : 0) : videoEl.duration; },
+          get paused() { return mode === 'yt' ? (!yt || !yt.getPlayerState || yt.getPlayerState() !== 1) : videoEl.paused; },
+          get playbackRate() { return mode === 'yt' ? (yt && yt.getPlaybackRate ? yt.getPlaybackRate() : 1) : videoEl.playbackRate; },
+          set playbackRate(r) { if (mode === 'yt') { if (yt && yt.setPlaybackRate) yt.setPlaybackRate(r); } else videoEl.playbackRate = r; },
+          get volume() { return mode === 'yt' ? (yt && yt.getVolume ? yt.getVolume() / 100 : 1) : videoEl.volume; },
+          set volume(v) { if (mode === 'yt') { if (yt && yt.setVolume) yt.setVolume(v * 100); } else videoEl.volume = v; },
+          get src() { return srcTag; },
+          play() { if (mode === 'yt') { if (yt && yt.playVideo) yt.playVideo(); return Promise.resolve(); } return videoEl.play(); },
+          pause() { if (mode === 'yt') { if (yt && yt.pauseVideo) yt.pauseVideo(); } else videoEl.pause(); },
+          addEventListener(ev, fn) { (bus[ev] || (bus[ev] = [])).push(fn); },
+          removeEventListener(ev, fn) { const a = bus[ev]; if (a) { const i = a.indexOf(fn); if (i >= 0) a.splice(i, 1); } },
+          loadVideo(src) { loadVid(src); },
+          loadYouTube(id) { loadYT(id); },
+          clear() {
+            stopPoll(); ytReadyId = null; srcTag = '';
+            if (mode === 'yt') { try { yt && yt.stopVideo && yt.stopVideo(); } catch (e) {} }
+            else { try { videoEl.pause(); } catch (e) {} videoEl.src = ''; }
+          },
+        };
+      }
+
+      const dmVideoEl  = document.getElementById('dmVideoEl');
+      const dmYtWrap   = document.getElementById('dmYtWrap');
+      const dmPlayer   = makeMedia(dmVideoEl, dmYtWrap);
+      const dmModal    = document.getElementById('dictModal');
+      const dmInput    = document.getElementById('dmInput');
+      const dmIdx      = document.getElementById('dmIdx');
+      const dmWords    = document.getElementById('dmWords');
+      const dmMatch    = document.getElementById('dmMatch');
+      const dmTags     = document.getElementById('dmTags');
+      const dmGrid     = document.getElementById('dmGrid');
+      const dmTrans    = document.getElementById('dmTrans');
+      const dmHidden   = document.getElementById('dmHidden');
+      const dmSeekFill = document.getElementById('dmSeekFill');
+      const dmSeekWrap = document.getElementById('dmSeekWrap');
+      const dmTimeEl   = document.getElementById('dmTime');
+      const dmBtnPP    = document.getElementById('dmBtnPP');
+
+      const DM_PLAY_ICO  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+      const DM_PAUSE_ICO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+
+      function dmFmtTime(s) {
+        if (!isFinite(s) || s < 0) return '0:00';
+        return Math.floor(s / 60) + ':' + Math.floor(s % 60).toString().padStart(2, '0');
+      }
+
+      // Seek bar + time display — update on every timeupdate
+      dmPlayer.addEventListener('timeupdate', () => {
+        if (!dmPlayer.duration) return;
+        dmSeekFill.style.width = (dmPlayer.currentTime / dmPlayer.duration * 100) + '%';
+        dmTimeEl.textContent = dmFmtTime(dmPlayer.currentTime) + ' / ' + dmFmtTime(dmPlayer.duration);
+      });
+
+      // Click seek bar — nhảy tới vị trí bất kỳ, thoát khỏi chế độ dừng segment
+      dmSeekWrap.addEventListener('click', e => {
+        if (!dmPlayer.duration) return;
+        const r = dmSeekWrap.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        const seekTime = ratio * dmPlayer.duration;
+
+        // Tháo stop listener cũ
+        if (dmStopFn) { dmPlayer.removeEventListener('timeupdate', dmStopFn); dmStopFn = null; }
+
+        // Tìm segment tại vị trí click
+        const segIdx = dmSegs.findIndex(s => seekTime >= s.start && seekTime <= s.end + 0.3);
+        if (segIdx >= 0) {
+          dmUpdateSegUI(segIdx);
+          dmSegEnd = dmSegs[segIdx].end;
+          dmPlayer.currentTime = seekTime;
+          dmPlayer.play().catch(() => {});
+          dmAttachStop();
+        } else {
+          // Không có segment → free-play
+          dmSegEnd = Infinity;
+          dmPlayer.currentTime = seekTime;
+          dmPlayer.play().catch(() => {});
+        }
+      });
+
+      // Play/pause button sync
+      dmPlayer.addEventListener('play',  () => { dmBtnPP.innerHTML = DM_PAUSE_ICO; });
+      dmPlayer.addEventListener('pause', () => { dmBtnPP.innerHTML = DM_PLAY_ICO; });
+      dmPlayer.addEventListener('ended', () => { dmBtnPP.innerHTML = DM_PLAY_ICO; });
+
+      dmBtnPP.addEventListener('click', () => {
+        if (dmPlayer.paused) {
+          if (!dmStopFn && isFinite(dmSegEnd)) dmAttachStop(); // re-attach nếu cần
+          dmPlayer.play().catch(() => {});
+        } else {
+          dmPlayer.pause();
+        }
+      });
+
+      // Skip to current segment start và replay với stop listener
+      document.getElementById('dmBtnSkipBack').addEventListener('click', () => {
+        if (!dmSegs[dmCur]) return;
+        dmPlaySeg(dmSegs[dmCur]);
+      });
+
+      // Replay current segment
+      document.getElementById('dmBtnReplayCtrl').addEventListener('click', dmReplay);
+
+      // Skip to next segment
+      document.getElementById('dmBtnSkipFwd').addEventListener('click', () => dmLoadSeg(dmCur + 1));
+
+      // Speed control
+      document.querySelectorAll('.dm-speed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.dm-speed-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          dmPlayer.playbackRate = parseFloat(btn.dataset.rate);
+        });
+      });
+
+      // Click → đổi URL sang ?slug=… rồi để router mở trang detail.
+      function openDictation(i) {
+        const c = filtered()[i];
+        if (!c || !c.hasTranscript) return;
+        navToDetail(c.slug);
+      }
+
+      // Đẩy ?slug vào history rồi áp router (mở detail).
+      function navToDetail(slug) {
+        const url = new URL(location.href);
+        url.searchParams.set('slug', slug);
+        url.searchParams.delete('page');
+        url.searchParams.delete('limit');
+        history.pushState(null, '', url);
+        applyRoute();
+      }
+
+      // Router: có ?slug → trang detail; không → trang list.
+      function applyRoute() {
+        const slug = new URLSearchParams(location.search).get('slug');
+        if (slug) {
+          const c = allClips.find((x) => x.slug === slug);
+          if (c && c.hasTranscript) {
+            // Mở trực tiếp bằng ?slug kèm page/limit → dọn URL cho gọn.
+            const u = new URL(location.href);
+            if (u.searchParams.has('page') || u.searchParams.has('limit')) {
+              u.searchParams.delete('page');
+              u.searchParams.delete('limit');
+              history.replaceState(null, '', u);
+            }
+            openDictationClip(c);
+            return;
+          }
+          // slug không hợp lệ → dọn về list
+        }
+        if (dmModal.classList.contains('open')) dmCloseView();
+        render();
+      }
+
+      async function openDictationClip(c) {
+        if (!c || !c.hasTranscript) return;
+        try {
+          if (c.transcriptUrls) {
+            // R2 mode: fetch từng transcript JSON qua URL
+            const allSegs = [];
+            let offset = 0;
+            for (const url of c.transcriptUrls) {
+              const data = await fetch(url).then(r => r.json());
+              (data.segments || []).filter(s => s.text && s.text.trim()).forEach(s => {
+                allSegs.push({ text: s.text, start: s.start + offset, end: s.end + offset });
+              });
+              offset += data.duration || 0;
+            }
+            dmSegs = allSegs;
+          } else if (c._subDirHandle) {
+            // Local filesystem mode, cấu trúc mới: output/<slug>/parts/
+            const partsDirHandle = await c._subDirHandle.getDirectoryHandle('parts');
+            const trEntries = [];
+            for await (const [fname, fentry] of partsDirHandle.entries()) {
+              if (fname.endsWith('_transcript.json')) trEntries.push({ name: fname, entry: fentry });
+            }
+            trEntries.sort((a, b) => a.name.localeCompare(b.name));
+            const allSegs = [];
+            let offset = 0;
+            for (const { entry } of trEntries) {
+              const file = await entry.getFile();
+              const data = JSON.parse(await file.text());
+              (data.segments || []).filter(s => s.text && s.text.trim()).forEach(s => {
+                allSegs.push({ text: s.text, start: s.start + offset, end: s.end + offset });
+              });
+              offset += data.duration || 0;
+            }
+            dmSegs = allSegs;
+          } else if (c.partsDir) {
+            // Local filesystem mode, cấu trúc cũ: output/<slug>_parts/
+            const partsDirHandle = await dirHandle.getDirectoryHandle(c.partsDir);
+            const trEntries = [];
+            for await (const [fname, fentry] of partsDirHandle.entries()) {
+              if (fname.endsWith('_transcript.json')) trEntries.push({ name: fname, entry: fentry });
+            }
+            trEntries.sort((a, b) => a.name.localeCompare(b.name));
+            const allSegs = [];
+            let offset = 0;
+            for (const { entry } of trEntries) {
+              const file = await entry.getFile();
+              const data = JSON.parse(await file.text());
+              (data.segments || []).filter(s => s.text && s.text.trim()).forEach(s => {
+                allSegs.push({ text: s.text, start: s.start + offset, end: s.end + offset });
+              });
+              offset += data.duration || 0;
+            }
+            dmSegs = allSegs;
+          } else {
+            // Fallback: single _transcript.json ngang hàng
+            const trFile = await (await dirHandle.getFileHandle(c.transcriptName)).getFile();
+            const data = JSON.parse(await trFile.text());
+            dmSegs = (data.segments || []).filter(s => s.text && s.text.trim());
+          }
+          if (!dmSegs.length) return;
+
+          dmClipSlug = c.slug || '';
+          dmCompleted = new Set(JSON.parse(localStorage.getItem('dm_done_' + dmClipSlug) || '[]'));
+          // Có youtube_id → phát qua YouTube IFrame (không cần file local).
+          // Ngược lại dùng <video> native với mp4 local/URL.
+          if (c.youtubeId) dmPlayer.loadYouTube(c.youtubeId);
+          else dmPlayer.loadVideo(c.mp4Url || c.mp4Blob);
+          dmModal.classList.add('open');
+          dmBuildTPanel();
+          // Desktop: show panel; Mobile: start hidden (slide-up on demand)
+          const isMobileOpen = window.matchMedia('(max-width: 600px)').matches;
+          if (isMobileOpen) {
+            // Ensure panel starts closed on mobile
+            document.getElementById('dmTPanel').classList.remove('tp-open');
+            document.getElementById('dmTpBackdrop').classList.remove('open');
+            document.getElementById('dmBtnTPanel').classList.remove('on');
+          } else {
+            dmToggleTPanel(true);
+          }
+          dmLoadSeg(0);
+          dmModal.scrollTop = 0;
+          dmSetupIelts(c);
+          setTimeout(() => dmInput.focus(), 80);
+        } catch (e) { console.error('openDictation', e); }
+      }
+
+      // Đóng detail = điều hướng về list (xoá ?slug). Router sẽ teardown.
+      function dmClose() {
+        const url = new URL(location.href);
+        if (url.searchParams.has('slug')) {
+          url.searchParams.delete('slug');
+          history.pushState(null, '', url);
+        }
+        applyRoute();
+      }
+
+      // Teardown thực sự của trang detail (gọi bởi router).
+      function dmCloseView() {
+        dmModal.classList.remove('open');
+        document.getElementById('dmTPanel').classList.remove('tp-open');
+        document.getElementById('dmTpBackdrop').classList.remove('open');
+        dmPlayer.pause();
+        dmPlayer.clear();
+        dmInput.value = '';
+        dmSeekFill.style.width = '0%';
+        dmTimeEl.textContent = '0:00 / 0:00';
+        dmBtnPP.innerHTML = DM_PLAY_ICO;
+        if (dmStopFn) { dmPlayer.removeEventListener('timeupdate', dmStopFn); dmStopFn = null; }
+      }
+
+      /* ══ Câu hỏi nghe (Listening) — render danh sách + chấm tức thì, dùng chung ══ */
+      const IQ_TYPE_LABEL = {
+        multiple_choice: 'Trắc nghiệm',
+        sentence_completion: 'Điền câu',
+        note_completion: 'Điền ghi chú',
+        short_answer: 'Trả lời ngắn',
+        matching: 'Nối',
+      };
+
+      function iqEsc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+      function iqNorm(s) {
+        return String(s == null ? '' : s).toLowerCase()
+          .replace(/[.,!?;:'"()\[\]/\\-]/g, ' ')
+          .replace(/\b(a|an|the)\b/g, ' ')
+          .replace(/\s+/g, ' ').trim();
+      }
+      // Mốc bắt đầu đoạn nghe: ưu tiên field `start`, fallback `time` (JSON cũ).
+      function iqStartOf(q) {
+        if (q && typeof q.start === 'number') return q.start;
+        if (q && typeof q.time === 'number') return q.time;
+        return undefined;
+      }
+
+      function iqAnswerOk(input, answer) {
+        const a = iqNorm(input);
+        if (!a) return false;
+        // answer có thể có nhiều biến thể hợp lệ, ngăn cách bởi "/"
+        return String(answer).split('/').some(opt => iqNorm(opt) === a);
+      }
+
+      // Render danh sách câu hỏi vào 1 container bất kỳ; chấm tức thì bằng closure.
+      // opts: { listEl, scoreEl, player, data, onSeek }  → trả về { revealAll }
+      function renderIelts(opts) {
+        const { listEl, scoreEl, player, data, onSeek } = opts;
+        const qs = (data && data.questions) || [];
+        const state = {};   // state[qi] = 'correct' | 'wrong' | 'revealed'
+
+        function updateScore() {
+          const correct = Object.values(state).filter(v => v === 'correct').length;
+          const done = Object.keys(state).length;
+          if (scoreEl) scoreEl.textContent = `${correct} đúng / ${done} đã làm · ${qs.length} câu`;
+        }
+        function showFb(card, ok, q) {
+          const fb = card.querySelector('.iq-feedback');
+          const verdict = ok ? `<span class="ok">✓ Chính xác!</span>`
+                             : `<span class="no">✗ Chưa đúng.</span>`;
+          const ex = q.explanation ? `<br><span class="ex">${iqEsc(q.explanation)}</span>` : '';
+          fb.innerHTML = `${verdict} &nbsp; <span class="ans">Đáp án: ${iqEsc(q.answer)}</span>${ex}`;
+          fb.classList.add('show');
+          card.classList.add(ok ? 'correct' : 'wrong');
+        }
+        function doFill(card) {
+          const qi = +card.dataset.qi;
+          if (state[qi]) return;
+          const q = qs[qi];
+          const inp = card.querySelector('.iq-fill');
+          if (!inp.value.trim()) { inp.focus(); return; }
+          const ok = iqAnswerOk(inp.value, q.answer);
+          inp.disabled = true;
+          card.querySelector('.iq-check').disabled = true;
+          state[qi] = ok ? 'correct' : 'wrong';
+          showFb(card, ok, q);
+          updateScore();
+        }
+
+        listEl.innerHTML = qs.map((q, qi) => {
+          const isMC = q.type === 'multiple_choice' || q.type === 'matching';
+          const body = isMC
+            ? `<div class="iq-opts">${(q.options || []).map((o, oi) =>
+                `<button class="iq-opt" data-o="${oi}">${iqEsc(o)}</button>`).join('')}</div>`
+            : `<div class="iq-fill-row">
+                 <input class="iq-fill" type="text" placeholder="Nhập đáp án rồi nhấn Enter…">
+                 <button class="iq-check">Kiểm tra</button>
+               </div>`;
+          const limit = q.word_limit ? `<div class="iq-limit">✎ ${iqEsc(q.word_limit)}</div>` : '';
+          const qStart = iqStartOf(q);
+          const listen = (typeof qStart === 'number' && isFinite(qStart))
+            ? `<button class="iq-listen" data-t="${qStart}">▶ nghe</button>` : '';
+          return `<div class="iq-card" data-qi="${qi}">
+            <div class="iq-q-top">
+              <span class="iq-num">${q.no != null ? q.no : qi + 1}.</span>
+              <span class="iq-type">${iqEsc(IQ_TYPE_LABEL[q.type] || q.type || '')}</span>
+              ${listen}
+            </div>
+            <div class="iq-qtext">${iqEsc(q.question || '')}</div>
+            ${limit}${body}
+            <div class="iq-feedback"></div>
+          </div>`;
+        }).join('');
+
+        listEl.querySelectorAll('.iq-opt').forEach(btn =>
+          btn.addEventListener('click', () => {
+            const card = btn.closest('.iq-card');
+            const qi = +card.dataset.qi;
+            if (state[qi]) return;
+            const q = qs[qi];
+            const oi = +btn.dataset.o;
+            const ok = iqNorm((q.options || [])[oi]) === iqNorm(q.answer);
+            card.querySelectorAll('.iq-opt').forEach(b => {
+              b.disabled = true;
+              const o = (q.options || [])[+b.dataset.o];
+              if (+b.dataset.o === oi) b.classList.add(ok ? 'picked-correct' : 'picked-wrong');
+              else if (iqNorm(o) === iqNorm(q.answer)) b.classList.add('reveal-correct');
+            });
+            state[qi] = ok ? 'correct' : 'wrong';
+            showFb(card, ok, q);
+            updateScore();
+          }));
+        listEl.querySelectorAll('.iq-check').forEach(btn =>
+          btn.addEventListener('click', () => doFill(btn.closest('.iq-card'))));
+        listEl.querySelectorAll('.iq-fill').forEach(inp =>
+          inp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); doFill(inp.closest('.iq-card')); }
+          }));
+        // Quản lý điểm dừng cuối đoạn: mỗi lần bấm "nghe" sẽ huỷ mốc cũ, đặt mốc mới.
+        let iqStopFn = null;
+        function iqClearStop() {
+          if (iqStopFn) { player.removeEventListener('timeupdate', iqStopFn); iqStopFn = null; }
+        }
+        listEl.querySelectorAll('.iq-listen').forEach(btn =>
+          btn.addEventListener('click', () => {
+            if (!player || !player.src) return;
+            if (onSeek) onSeek();          // bỏ mốc dừng của dictation
+            iqClearStop();                 // bỏ mốc dừng của lần nghe trước
+            const start = +btn.dataset.t || 0;
+            const qi = +btn.closest('.iq-card').dataset.qi;
+            // điểm dừng: ưu tiên q.end (mốc kết thúc câu nói thật trong transcript);
+            // nếu JSON cũ không có end → fallback dùng time của câu kế tiếp; cuối cùng nghe tới hết.
+            let stopAt = Infinity;
+            const qend = qs[qi] && qs[qi].end;
+            if (typeof qend === 'number' && isFinite(qend) && qend > start) {
+              stopAt = qend;
+            } else {
+              for (let j = qi + 1; j < qs.length; j++) {
+                const t = iqStartOf(qs[j]);
+                if (typeof t === 'number' && isFinite(t) && t > start) { stopAt = t; break; }
+              }
+            }
+            player.currentTime = start;
+            if (isFinite(stopAt)) {
+              iqStopFn = () => {
+                if (player.currentTime >= stopAt - 0.05) { player.pause(); iqClearStop(); }
+              };
+              player.addEventListener('timeupdate', iqStopFn);
+            }
+            player.play().catch(() => {});
+          }));
+        updateScore();
+
+        return {
+          revealAll() {
+            qs.forEach((q, qi) => {
+              if (state[qi]) return;
+              const card = listEl.querySelector(`.iq-card[data-qi="${qi}"]`);
+              if (q.type === 'multiple_choice' || q.type === 'matching') {
+                card.querySelectorAll('.iq-opt').forEach(b => {
+                  b.disabled = true;
+                  if (iqNorm((q.options || [])[+b.dataset.o]) === iqNorm(q.answer))
+                    b.classList.add('reveal-correct');
+                });
+              } else {
+                const inp = card.querySelector('.iq-fill');
+                if (inp) { inp.value = q.answer; inp.disabled = true; }
+                const ck = card.querySelector('.iq-check'); if (ck) ck.disabled = true;
+              }
+              const fb = card.querySelector('.iq-feedback');
+              fb.innerHTML = `<span class="ans">Đáp án: ${iqEsc(q.answer)}</span>` +
+                (q.explanation ? `<br><span class="ex">${iqEsc(q.explanation)}</span>` : '');
+              fb.classList.add('show');
+              state[qi] = 'revealed';
+            });
+            updateScore();
+          }
+        };
+      }
+
+      async function iqLoadData(c) {
+        if (c.ieltsUrl) return await fetch(c.ieltsUrl).then(r => r.json());
+        if (c._subDirHandle) {
+          const f = await (await c._subDirHandle.getFileHandle('ielts_listening.json')).getFile();
+          return JSON.parse(await f.text());
+        }
+        return null;
+      }
+
+      /* ── Câu hỏi nghe = tab riêng trong màn Luyện (không cướp phím tắt) ── */
+      let dmIqCtrl = null, dmTab = 'practice';
+
+      function dmSetTab(tab) {
+        dmTab = tab;
+        const content = document.querySelector('#dictModal .dm-content');
+        const onQ = tab === 'questions';
+        const onS = tab === 'scramble';
+        content.classList.toggle('qmode', onQ);
+        content.classList.toggle('smode', onS);
+        // dm-bottom nằm ngoài dm-content → toggle trên backdrop để đổi theo
+        dmModal.classList.toggle('smode', onS);
+        dmModal.classList.toggle('qmode', onQ);
+        const btnQ = document.getElementById('dmTabQ');
+        btnQ.classList.toggle('tab-on', onQ);
+        btnQ.innerHTML = onQ ? '✍️ Quay lại luyện' : '🎧 Câu hỏi nghe';
+        const btnS = document.getElementById('dmTabS');
+        btnS.classList.toggle('tab-on', onS);
+        btnS.innerHTML = onS ? '✍️ Quay lại luyện' : '🧩 Sắp xếp câu';
+        if (onQ || onS) dmPlayer.pause();   // dừng auto-play từng câu khi sang làm bài
+        if (onS) dmBuildScramble(dmCur);
+        if (tab === 'practice') setTimeout(() => dmInput && dmInput.focus(), 30);
+      }
+      document.getElementById('dmTabS').addEventListener('click', () =>
+        dmSetTab(dmTab === 'scramble' ? 'practice' : 'scramble'));
+
+      // ══ Bài tập "Sắp xếp câu" (xáo trộn từ → ghép lại theo transcript) ══
+      let dmSTokens = [];   // [{text, norm}] theo thứ tự đúng
+      let dmSOrder  = [];   // chỉ số đã xáo trộn để hiển thị kho từ
+      let dmSPlaced = [];   // chỉ số các từ đã đặt vào câu (theo thứ tự đặt)
+      let dmSDrag   = null; // { ti } — token đang kéo
+
+      function dmShuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function dmBuildScramble(idx) {
+        const seg = dmSegs[idx];
+        if (!seg) return;
+        const toks = dmTokenize(seg.text);
+        dmSTokens = toks.map(t => ({ text: t, norm: dmNorm(t) }));
+        dmSPlaced = [];
+        let order = dmShuffle(dmSTokens.map((_, i) => i));
+        // Tránh xáo trộn ra y hệt thứ tự gốc (khi có >1 từ)
+        if (dmSTokens.length > 1 && order.every((v, i) => v === i)) order = dmShuffle(order);
+        dmSOrder = order;
+        dmRenderScramble();
+        dmSStatusSet('');
+      }
+
+      function dmSStatusSet(state) {
+        const el = document.getElementById('dmSStatus');
+        const ans = document.getElementById('dmSAnswer');
+        el.classList.remove('ok', 'bad'); ans.classList.remove('ok', 'bad');
+        if (state === 'ok')  { el.classList.add('ok');  ans.classList.add('ok');  el.textContent = '✓ Chính xác!'; }
+        else if (state === 'bad') { el.classList.add('bad'); ans.classList.add('bad'); el.textContent = '✗ Chưa đúng, thử lại'; }
+        else el.textContent = `${dmSPlaced.length}/${dmSTokens.length} từ`;
+      }
+
+      function dmMakeDraggable(el, ti) {
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          dmSDrag = { ti };
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', String(ti)); } catch (_) {}
+          requestAnimationFrame(() => el.classList.add('dragging'));
+        });
+        el.addEventListener('dragend', () => { dmSDrag = null; dmSClearIndicator(); el.classList.remove('dragging'); });
+      }
+
+      function dmRenderScramble() {
+        const bank = document.getElementById('dmSBank');
+        const ans  = document.getElementById('dmSAnswer');
+        // Câu đang ghép
+        ans.innerHTML = '';
+        dmSPlaced.forEach((ti, pos) => {
+          const c = document.createElement('button');
+          c.className = 'dm-sp-tok in-answer';
+          c.textContent = dmSTokens[ti].text;
+          c.addEventListener('click', () => dmScrambleRemove(pos));
+          dmMakeDraggable(c, ti);
+          ans.appendChild(c);
+        });
+        // Kho từ (giữ chỗ ẩn cho từ đã đặt để layout không nhảy)
+        bank.innerHTML = '';
+        dmSOrder.forEach(ti => {
+          const placed = dmSPlaced.includes(ti);
+          const c = document.createElement('button');
+          c.className = 'dm-sp-tok' + (placed ? ' placed-hidden' : '');
+          c.textContent = dmSTokens[ti].text;
+          if (!placed) { c.addEventListener('click', () => dmScramblePlace(ti)); dmMakeDraggable(c, ti); }
+          bank.appendChild(c);
+        });
+      }
+
+      // ── Vị trí chèn khi kéo-thả vào câu ──
+      function dmSInsertIndex(container, x, y) {
+        const chips = [...container.querySelectorAll('.dm-sp-tok:not(.dragging)')];
+        for (let i = 0; i < chips.length; i++) {
+          const r = chips[i].getBoundingClientRect();
+          if (y < r.bottom && x < r.left + r.width / 2) return i;
+        }
+        return chips.length;
+      }
+      let dmSCaret = null;   // vạch đỏ chỉ vị trí chèn
+      function dmSGetCaret() {
+        if (!dmSCaret) { dmSCaret = document.createElement('div'); dmSCaret.className = 'dm-sp-caret'; }
+        return dmSCaret;
+      }
+      function dmSClearIndicator() {
+        if (dmSCaret && dmSCaret.parentNode) dmSCaret.parentNode.removeChild(dmSCaret);
+      }
+      function dmSShowIndicator(container, x, y) {
+        const chips = [...container.querySelectorAll('.dm-sp-tok:not(.dragging)')];
+        const idx = dmSInsertIndex(container, x, y);
+        const caret = dmSGetCaret();
+        if (idx >= chips.length) container.appendChild(caret);
+        else container.insertBefore(caret, chips[idx]);
+      }
+
+      (function dmScrambleDnD() {
+        const ans  = document.getElementById('dmSAnswer');
+        const bank = document.getElementById('dmSBank');
+        if (!ans || !bank) return;
+        ans.addEventListener('dragover', e => {
+          if (!dmSDrag) return;
+          e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+          dmSShowIndicator(ans, e.clientX, e.clientY);
+        });
+        ans.addEventListener('dragleave', e => { if (!ans.contains(e.relatedTarget)) dmSClearIndicator(); });
+        ans.addEventListener('drop', e => {
+          if (!dmSDrag) return;
+          e.preventDefault();
+          const ti = dmSDrag.ti;
+          const ins = dmSInsertIndex(ans, e.clientX, e.clientY);
+          const arr = dmSPlaced.slice();
+          const cur = arr.indexOf(ti);
+          let target = ins;
+          if (cur !== -1) { arr.splice(cur, 1); if (cur < ins) target -= 1; }
+          target = Math.max(0, Math.min(target, arr.length));
+          arr.splice(target, 0, ti);
+          dmSPlaced = arr;
+          dmSDrag = null; dmSClearIndicator();
+          dmRenderScramble();
+          if (dmSPlaced.length === dmSTokens.length) dmCheckScramble(); else dmSStatusSet('');
+        });
+        // Thả về kho = bỏ từ khỏi câu
+        bank.addEventListener('dragover', e => { if (dmSDrag) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } });
+        bank.addEventListener('drop', e => {
+          if (!dmSDrag) return;
+          e.preventDefault();
+          const ti = dmSDrag.ti;
+          const cur = dmSPlaced.indexOf(ti);
+          dmSDrag = null; dmSClearIndicator();
+          if (cur !== -1) { dmSPlaced.splice(cur, 1); dmRenderScramble(); dmSStatusSet(''); }
+        });
+      })();
+
+      function dmScramblePlace(ti) {
+        dmSPlaced.push(ti);
+        dmRenderScramble();
+        if (dmSPlaced.length === dmSTokens.length) dmCheckScramble();
+        else dmSStatusSet('');
+      }
+
+      function dmScrambleRemove(pos) {
+        dmSPlaced.splice(pos, 1);
+        dmRenderScramble();
+        dmSStatusSet('');
+      }
+
+      function dmCheckScramble() {
+        if (!dmSPlaced.length) return;
+        const ans = document.getElementById('dmSAnswer');
+        ans.querySelectorAll('.dm-sp-tok').forEach((c, pos) => {
+          const ti = dmSPlaced[pos];
+          c.classList.remove('in-answer');
+          c.classList.add(dmSTokens[ti].norm === dmSTokens[pos].norm ? 'tok-ok' : 'tok-bad');
+        });
+        const ok = dmSPlaced.length === dmSTokens.length &&
+                   dmSPlaced.every((ti, pos) => dmSTokens[ti].norm === dmSTokens[pos].norm);
+        dmSStatusSet(ok ? 'ok' : 'bad');
+        if (ok) dmMarkDone(dmCur);
+      }
+
+      function dmRevealScramble() {
+        dmSPlaced = dmSTokens.map((_, i) => i);
+        dmRenderScramble();
+        dmCheckScramble();
+      }
+
+      document.getElementById('dmSCheck').addEventListener('click', dmCheckScramble);
+      document.getElementById('dmSReveal').addEventListener('click', dmRevealScramble);
+      document.getElementById('dmSReset').addEventListener('click', () => dmBuildScramble(dmCur));
+
+      async function dmSetupIelts(c) {
+        const tabBtn = document.getElementById('dmTabQ');
+        dmSetTab('practice');           // luôn mở ở tab luyện trước
+        dmIqCtrl = null;
+        document.getElementById('dmQList').innerHTML = '';
+        if (!c || !c.hasIelts || !c._subDirHandle) { tabBtn.style.display = 'none'; return; }
+        try {
+          const data = await iqLoadData(c);
+          if (!data || !(data.questions || []).length) { tabBtn.style.display = 'none'; return; }
+          tabBtn.style.display = '';
+          const listEl  = document.getElementById('dmQList');
+          const scoreEl = document.getElementById('dmQScore');
+          const build = () => renderIelts({
+            listEl, scoreEl, player: dmPlayer, data,
+            // khi bấm "▶ nghe": bỏ cơ chế dừng-cuối-câu của dictation để nghe tự do
+            onSeek: () => { if (dmStopFn) { dmPlayer.removeEventListener('timeupdate', dmStopFn); dmStopFn = null; } },
+          });
+          dmIqCtrl = build();
+          document.getElementById('dmQRevealAll').onclick = () => dmIqCtrl && dmIqCtrl.revealAll();
+          document.getElementById('dmQReset').onclick = () => { dmIqCtrl = build(); };
+        } catch (e) { console.error('dmSetupIelts', e); tabBtn.style.display = 'none'; }
+      }
+      document.getElementById('dmTabQ').addEventListener('click', () =>
+        dmSetTab(dmTab === 'questions' ? 'practice' : 'questions'));
+
+      // Detect Chinese / Japanese (không phải Korean — Korean dùng dấu cách bình thường)
+      function dmIsCJK(text) { return /[぀-鿿㐀-䶿]/.test(text); }
+
+      // CJK → tách từng ký tự; ngôn ngữ khác → tách theo khoảng trắng
+      function dmTokenize(text) {
+        if (dmIsCJK(text)) {
+          // Bỏ khoảng trắng + dấu câu CJK & fullwidth, giữ lại ký tự nội dung
+          return [...text.replace(/[\s　-〿！-￮！-～。、，…]/g, '')].filter(Boolean);
+        }
+        return text.trim().split(/\s+/).filter(Boolean);
+      }
+
+      function dmNorm(w) {
+        return w.toLowerCase()
+          .replace(/[.,!?;:'"()«»。、！？「」『』【】（）…]/g, '')
+          .trim();
+      }
+
+      function dmLoadSeg(idx) {
+        if (idx < 0 || idx >= dmSegs.length) return;
+        dmUpdateSegUI(idx);
+        dmPlaySeg(dmSegs[idx]);
+      }
+
+      function dmFmtTime(s) {
+        const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+        return `${m}:${String(sec).padStart(2, '0')}`;
+      }
+
+      function dmMarkDone(idx) {
+        if (dmCompleted.has(idx)) return;
+        dmCompleted.add(idx);
+        if (dmClipSlug) localStorage.setItem('dm_done_' + dmClipSlug, JSON.stringify([...dmCompleted]));
+        const panel = document.getElementById('dmTPanel');
+        const el = panel.querySelectorAll('.dm-tp-item')[idx];
+        if (el) el.classList.add('done');
+      }
+
+      function dmBuildTPanel() {
+        const panel = document.getElementById('dmTPanel');
+        // Remove only the segment items, keep the header
+        panel.querySelectorAll('.dm-tp-item').forEach(el => el.remove());
+        dmSegs.forEach((seg, i) => {
+          const item = document.createElement('div');
+          item.className = 'dm-tp-item' + (dmCompleted.has(i) ? ' done' : '');
+          item.innerHTML = `<div class="dm-tp-num">#${i + 1} · ${dmFmtTime(seg.start)}</div><div class="dm-tp-text">${seg.text}</div>`;
+          item.addEventListener('click', () => { dmTpHold = 0; dmLoadSeg(i); });
+          panel.appendChild(item);
+        });
+      }
+
+      // Khi người dùng tự cuộn transcript → tạm ngừng auto-scroll bám segment.
+      // Dùng wheel/touchmove (cử chỉ thật của user) nên KHÔNG bị scrollIntoView tự kích hoạt.
+      let dmTpHold = 0;
+      const DM_TP_HOLD_MS = 4000;
+      (function () {
+        const panel = document.getElementById('dmTPanel');
+        if (!panel) return;
+        const mark = () => { dmTpHold = performance.now(); };
+        panel.addEventListener('wheel', mark, { passive: true });
+        panel.addEventListener('touchmove', mark, { passive: true });
+      })();
+
+      function dmSyncTPanel(idx) {
+        const panel = document.getElementById('dmTPanel');
+        panel.querySelectorAll('.dm-tp-item').forEach((el, i) => {
+          el.classList.toggle('active', i === idx);
+        });
+        const active = panel.querySelector('.dm-tp-item.active');
+        // Bỏ qua auto-scroll nếu user vừa tự cuộn trong DM_TP_HOLD_MS gần đây
+        if (active && performance.now() - dmTpHold > DM_TP_HOLD_MS) {
+          active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+
+      function dmUpdateSegUI(idx) {
+        const seg = dmSegs[idx];
+        dmCur = idx; dmRevealed.clear(); dmInput.value = '';
+        document.getElementById('dmBtnShowAll').textContent = dmHintMode === 'all' ? 'Ẩn tất cả' : 'Hiện tất cả';
+        if (dmHintMode !== 'all') {
+          document.getElementById('dmBtnFL').classList.toggle('on', dmHFirst);
+          document.getElementById('dmBtnLL').classList.toggle('on', dmHLast);
+        }
+        dmIdx.textContent = `#${idx + 1}`;
+        document.getElementById('dmBtnPrev').disabled = idx === 0;
+        document.getElementById('dmBtnNext').disabled = idx === dmSegs.length - 1;
+        dmTrans.textContent = seg.text;
+        dmTrans.classList.toggle('hide', !dmShowTrans);
+        dmRenderTags(dmTokenize(seg.text));
+        dmRenderGrid(dmTokenize(seg.text));
+        if (dmHintMode === 'all') {
+          dmGrid.querySelectorAll('.dm-chip').forEach(chip => {
+            chip.textContent = chip.dataset.word; chip.dataset.r = '1';
+            chip.classList.add('dm-revealed');
+          });
+        }
+        dmUpdateProgress('');
+        dmSyncTPanel(idx);
+        if (dmTab === 'scramble') dmBuildScramble(idx);
+      }
+
+      function dmAttachStop() {
+        if (dmStopFn) dmPlayer.removeEventListener('timeupdate', dmStopFn);
+        dmStopFn = () => {
+          if (dmPlayer.currentTime >= dmSegEnd) {
+            dmPlayer.removeEventListener('timeupdate', dmStopFn);
+            dmStopFn = null;
+            if (dmAutoAdv && dmCur < dmSegs.length - 1) {
+              // Không dừng video — chỉ update UI và set stop tiếp theo
+              const nextIdx = dmCur + 1;
+              dmUpdateSegUI(nextIdx);
+              dmSegEnd = dmSegs[nextIdx].end;
+              dmAttachStop();
+            } else {
+              dmPlayer.pause();
+            }
+          }
+        };
+        dmPlayer.addEventListener('timeupdate', dmStopFn);
+      }
+
+      function dmPlaySeg(seg) {
+        dmSegEnd = seg.end;
+        dmPlayer.currentTime = seg.start;
+        dmPlayer.play().catch(() => {});
+        dmAttachStop();
+      }
+
+      function dmReplay() { if (dmSegs[dmCur]) dmPlaySeg(dmSegs[dmCur]); }
+
+      // Đổi miệng mascot: cười (cong) khi đúng cả câu, thẳng khi chưa.
+      function dmUpdateProgress(val) {
+        const segText = dmSegs[dmCur]?.text || '';
+        const words = dmTokenize(segText);
+        const isCJK = dmIsCJK(segText);
+        // CJK: tách từng ký tự; ngôn ngữ khác: tách theo khoảng trắng
+        const typedAll = isCJK
+          ? [...val.replace(/\s/g, '')].filter(Boolean)
+          : (val.length ? val.split(/\s+/).filter(Boolean) : []);
+        let matched = 0;
+        for (let i = 0; i < Math.min(typedAll.length, words.length); i++) {
+          if (dmNorm(typedAll[i]) === dmNorm(words[i])) matched++;
+        }
+        const total = words.length;
+        const pct = total ? Math.round(matched / total * 100) : 0;
+        dmWords.textContent = `${matched}/${total} từ`;
+        dmMatch.textContent = `Khớp: ${pct}%`;
+        dmMatch.className = 'dm-match' + (pct >= 80 ? ' good' : '');
+
+        dmGrid.querySelectorAll('.dm-chip').forEach((chip, i) => {
+          if (chip.dataset.r === '1') return; // manually revealed — không đụng vào
+          const correctWord = chip.dataset.word;
+          const typedWord = typedAll[i];
+
+          if (typedWord !== undefined) {
+            // Người dùng đã gõ vị trí này → hiện ngay từ đã gõ, màu theo đúng/sai
+            chip.textContent = typedWord;
+            chip.classList.remove('dm-hint-first', 'dm-correct', 'dm-typed-wrong');
+            chip.classList.add(dmNorm(typedWord) === dmNorm(correctWord) ? 'dm-correct' : 'dm-typed-wrong');
+          } else {
+            // Chưa gõ tới → khôi phục dots hoặc trạng thái hint hiện tại
+            chip.classList.remove('dm-correct', 'dm-typed-wrong', 'dm-hint-first', 'dm-hint-last', 'dm-hint-both');
+            if (dmHintMode === 'first') {
+              chip.textContent = correctWord[0] + '·'.repeat(Math.max(correctWord.length - 1, 0));
+              chip.classList.add('dm-hint-first');
+            } else if (dmHintMode === 'last') {
+              chip.textContent = '·'.repeat(Math.max(correctWord.length - 1, 0)) + correctWord[correctWord.length - 1];
+              chip.classList.add('dm-hint-last');
+            } else if (dmHintMode === 'both') {
+              const wl = correctWord.length;
+              const mid = wl <= 2 ? '' : '·'.repeat(wl - 2);
+              chip.textContent = wl === 1 ? correctWord : correctWord[0] + mid + correctWord[wl - 1];
+              chip.classList.add('dm-hint-both');
+            } else {
+              chip.textContent = '·'.repeat(Math.max(correctWord.length, 1));
+            }
+          }
+        });
+
+        // Chỉ đếm chip vẫn đang ẩn (chưa gõ, chưa reveal)
+        const hiddenN = dmGrid.querySelectorAll('.dm-chip:not([data-r="1"]):not(.dm-correct):not(.dm-typed-wrong)').length;
+        dmHidden.textContent = hiddenN > 0 ? `${hiddenN} từ ẩn` : '';
+        if (pct === 100 && total > 0) {
+          dmMarkDone(dmCur);
+          if (dmAutoAdv) {
+            const curIdx = dmCur;
+            setTimeout(() => { if (dmCur === curIdx) dmLoadSeg(dmCur + 1); }, 500);
+          }
+        }
+      }
+
+      function dmRenderTags(words) {
+        dmTags.innerHTML = '';
+        // Proper noun detection chỉ áp dụng cho Latin — CJK không có quy tắc chữ hoa
+        if (dmIsCJK(words.join(''))) return;
+        const names = [...new Set(words.map(w => w.replace(/[.,!?;:'"()]/g, '')).filter(w => /^[A-Z][A-Za-z0-9]*$/.test(w) && w.length > 1))];
+        if (!names.length) return;
+        const pt = document.createElement('span');
+        pt.className = 'dm-tag dm-tag-proper';
+        pt.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Danh từ riêng`;
+        dmTags.appendChild(pt);
+        names.forEach(n => { const t = document.createElement('span'); t.className = 'dm-tag dm-tag-name'; t.textContent = n; dmTags.appendChild(t); });
+      }
+
+      function dmRenderGrid(words) {
+        dmGrid.innerHTML = '';
+        words.forEach((word, i) => {
+          const clean = word.replace(/[.,!?;:'"()]/g, '');
+          const chip = document.createElement('div');
+          chip.className = 'dm-chip'; chip.dataset.i = i; chip.dataset.word = clean; chip.dataset.r = '0';
+          chip.textContent = '·'.repeat(Math.max(clean.length, 1));
+          chip.addEventListener('click', () => dmRevealChip(chip));
+          dmGrid.appendChild(chip);
+        });
+      }
+
+      function dmRevealChip(chip) {
+        if (chip.dataset.r === '1') return;
+        chip.textContent = chip.dataset.word; chip.dataset.r = '1';
+        chip.classList.add('dm-revealed');
+        chip.classList.remove('dm-correct', 'dm-typed-wrong', 'dm-hint-first', 'dm-hint-last', 'dm-hint-both');
+        dmRevealed.add(+chip.dataset.i); dmUpdateProgress(dmInput.value);
+      }
+
+      function dmRevealAll() {
+        dmGrid.querySelectorAll('.dm-chip').forEach(dmRevealChip);
+        dmHintMode = 'all';
+        document.getElementById('dmBtnShowAll').textContent = 'Ẩn tất cả';
+      }
+      function dmHideAll() {
+        dmHintMode = 'none';
+        dmHFirst = false; dmHLast = false;
+        document.getElementById('dmBtnFL').classList.remove('on');
+        document.getElementById('dmBtnLL').classList.remove('on');
+        dmRevealed.clear();
+        dmGrid.querySelectorAll('.dm-chip').forEach(chip => {
+          chip.dataset.r = '0';
+          chip.classList.remove('dm-revealed', 'dm-correct', 'dm-typed-wrong', 'dm-hint-first', 'dm-hint-last', 'dm-hint-both');
+          chip.textContent = '·'.repeat(Math.max(chip.dataset.word.length, 1));
+        });
+        document.getElementById('dmBtnShowAll').textContent = 'Hiện tất cả';
+        dmUpdateProgress(dmInput.value);
+      }
+      // Áp hint theo 2 cờ độc lập: đầu (dmHFirst) và cuối (dmHLast).
+      // Bật cả 2 → tự ra "đầu & cuối". Tổng hợp về dmHintMode rồi vẽ lại lưới.
+      function dmSyncHints() {
+        if (dmHintMode === 'all') return;   // đang "Hiện tất cả" → bỏ qua toggle
+        dmHintMode = dmHFirst && dmHLast ? 'both' : dmHFirst ? 'first' : dmHLast ? 'last' : 'none';
+        document.getElementById('dmBtnFL').classList.toggle('on', dmHFirst);
+        document.getElementById('dmBtnLL').classList.toggle('on', dmHLast);
+        dmUpdateProgress(dmInput.value);    // vẽ lại chip theo dmHintMode
+      }
+      function dmHintFirst() { if (dmHintMode === 'all') return; dmHFirst = !dmHFirst; dmSyncHints(); }
+      function dmHintLast()  { if (dmHintMode === 'all') return; dmHLast  = !dmHLast;  dmSyncHints(); }
+
+      // Button wiring
+      document.getElementById('dmHome').addEventListener('click', dmClose);
+      document.getElementById('dmBtnNext').addEventListener('click', () => dmLoadSeg(dmCur + 1));
+      document.getElementById('dmBtnPrev').addEventListener('click', () => dmLoadSeg(dmCur - 1));
+      document.getElementById('dmBtnShowAll').addEventListener('click', () => {
+        dmHintMode === 'all' ? dmHideAll() : dmRevealAll();
+      });
+      document.getElementById('dmBtnFL').addEventListener('click', dmHintFirst);
+      document.getElementById('dmBtnLL').addEventListener('click', dmHintLast);
+      document.getElementById('dmBtnFd').addEventListener('click', () => { dmFontSize = Math.max(12, dmFontSize - 2); dmInput.style.fontSize = dmFontSize + 'px'; });
+      document.getElementById('dmBtnFi').addEventListener('click', () => { dmFontSize = Math.min(30, dmFontSize + 2); dmInput.style.fontSize = dmFontSize + 'px'; });
+      document.getElementById('dmBtnAuto').addEventListener('click', function() {
+        dmAutoAdv = !dmAutoAdv;
+        this.textContent = dmAutoAdv ? '→ Tự động' : '→ Dừng';
+        this.classList.toggle('on', dmAutoAdv);
+        // Nếu vừa bật và video đang dừng giữa chừng → phát tiếp luôn
+        if (dmAutoAdv && dmPlayer.paused && dmSegs[dmCur]) {
+          if (!dmStopFn && isFinite(dmSegEnd)) dmAttachStop();
+          dmPlayer.play().catch(() => {});
+        }
+      });
+      function dmToggleTPanel(show) {
+        const panel    = document.getElementById('dmTPanel');
+        const btn      = document.getElementById('dmBtnTPanel');
+        const backdrop = document.getElementById('dmTpBackdrop');
+        const isMobile = window.matchMedia('(max-width: 600px)').matches;
+
+        if (isMobile) {
+          // Mobile: dùng class tp-open + slide animation (không dùng display:none)
+          const opening = show !== undefined ? show : !panel.classList.contains('tp-open');
+          panel.classList.toggle('tp-open', opening);
+          btn.classList.toggle('on', opening);
+          if (backdrop) backdrop.classList.toggle('open', opening);
+        } else {
+          // Desktop: sidebar — toggle display bình thường
+          const visible = show !== undefined ? show : (panel.style.display === 'none');
+          panel.style.display = visible ? '' : 'none';
+          btn.classList.toggle('on', visible);
+        }
+      }
+      document.getElementById('dmBtnTPanel').addEventListener('click', () => dmToggleTPanel());
+      document.getElementById('dmTpBackdrop').addEventListener('click', () => dmToggleTPanel(false));
+      document.getElementById('dmTpClose').addEventListener('click', () => dmToggleTPanel(false));
+      document.getElementById('dmBtnTrans').addEventListener('click', function() {
+        dmShowTrans = !dmShowTrans;
+        this.textContent = dmShowTrans ? 'Hiện dịch' : 'Ẩn dịch';
+        this.classList.toggle('on', dmShowTrans);
+        dmTrans.classList.toggle('hide', !dmShowTrans);
+      });
+      document.getElementById('dmBtnSave').addEventListener('click', function() {
+        const seg = dmSegs[dmCur]; if (!seg) return;
+        const saves = JSON.parse(localStorage.getItem('dictSaved') || '[]');
+        saves.push({ idx: dmCur + 1, text: seg.text, typed: dmInput.value, ts: Date.now() });
+        localStorage.setItem('dictSaved', JSON.stringify(saves));
+        this.classList.add('on'); setTimeout(() => this.classList.remove('on'), 900);
+      });
+
+      // IME composition guard — tránh update khi đang gõ pinyin/romaji chưa confirm
+      let dmComposing = false;
+      dmInput.addEventListener('compositionstart', () => { dmComposing = true; });
+      dmInput.addEventListener('compositionend',   e  => { dmComposing = false; dmUpdateProgress(e.target.value); });
+      dmInput.addEventListener('input', e => { if (!dmComposing) dmUpdateProgress(e.target.value); });
+
+      // Keyboard shortcuts (only active when dictation modal is open)
+      document.addEventListener('keydown', e => {
+        if (!dmModal.classList.contains('open')) return;
+        // Đang ở tab "Câu hỏi nghe" → KHÔNG dùng phím tắt dictation (Space, Tab,
+        // Ctrl, mũi tên…) để input/nút câu hỏi tự xử lý, tránh cướp action.
+        if (dmTab === 'questions') { if (e.key === 'Escape') dmClose(); return; }
+        // Tab "Sắp xếp câu": chỉ giữ Esc (đóng) và Ctrl (nghe lại); còn lại để yên.
+        if (dmTab === 'scramble') {
+          if (e.key === 'Escape') { dmClose(); return; }
+          if (e.key === 'Control') { e.preventDefault(); dmReplay(); return; }
+          return;
+        }
+        const inInput = document.activeElement === dmInput;
+        if (e.key === 'Escape') { dmClose(); return; }
+        if (e.key === 'Tab' && inInput) { e.preventDefault(); dmLoadSeg(dmCur + 1); return; }
+        if (e.key === ' ' && !inInput) { e.preventDefault(); dmPlayer.paused ? dmPlayer.play().catch(() => {}) : dmPlayer.pause(); return; }
+        if (e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); dmReplay(); return; }
+        if (e.altKey && e.key.toLowerCase() === 'h') { e.preventDefault(); dmHintFirst(); return; }
+        if (e.altKey && e.key.toLowerCase() === 'j') { e.preventDefault(); dmHintLast(); return; }
+        if (!inInput && e.key === 'ArrowRight') dmLoadSeg(dmCur + 1);
+        if (!inInput && e.key === 'ArrowLeft') dmLoadSeg(dmCur - 1);
+      });
+
+      document.getElementById('dmVolSlider').addEventListener('input', e => {
+        dmPlayer.volume = +e.target.value;
+      });
+
+      function openModal(i) {
+        const c = filtered()[i];
+        if (!c?.htmlBlob && !c?.mp4Blob) return;
+
+        // MP4-only clip (không có HTML): phát video thẳng
+        if (!c.htmlBlob && c.mp4Blob) {
+          modalTitle.textContent = c.title || c.slug.replace(/-/g, ' ');
+          modalFrame.src = 'about:blank';
+          modalFrame.style.display = 'none';
+          modalPrev.style.display = 'none';
+          modalNext.style.display = 'none';
+          modalVideo.src = c.mp4Blob;
+          modalVideo.style.display = '';
+          modalVideo.play();
+          modalToggle.style.display = 'none';
+          modalDl.style.display = '';
+          modalDl.href = c.mp4Blob;
+          modalDl.download = c.mp4Name;
+          modalOpenNew.onclick = () => window.open(c.mp4Blob, '_blank');
+          modal.classList.add('open');
+          return;
+        }
+        // Load the clip's real file straight from output/<slug>/index.html so
+        // relative assets (audio/images/fonts) resolve correctly. Fall back to
+        // the blob URL only when no slug is available.
+        const htmlSrc = c.slug
+          ? `output/${encodeURIComponent(c.slug)}/index.html`
+          : c.htmlBlob;
+        // "Mở tab mới" → trang view.html (clip + footer), không sửa output/.
+        const viewSrc = c.slug
+          ? `view.html?slug=${encodeURIComponent(c.slug)}` +
+            `&title=${encodeURIComponent(c.title || c.slug.replace(/-/g, ' '))}` +
+            (c.hasMp4 && c.mp4Name
+              ? `&mp4=${encodeURIComponent(c.mp4Name)}`
+              : '')
+          : c.htmlBlob;
+        _modalInMp4 = false;
+        modalTitle.textContent = c.title || c.slug.replace(/-/g, ' ');
+        // Default: show HTML iframe (slide nav arrows visible)
+        modalFrame.src = htmlSrc;
+        modalFrame.style.display = '';
+        modalPrev.style.display = '';
+        modalNext.style.display = '';
+        modalVideo.style.display = 'none';
+        modalVideo.pause();
+        modalVideo.src = '';
+        modalOpenNew.onclick = () => window.open(viewSrc, '_blank');
+        if (c.mp4Blob) {
+          modalToggle.style.display = '';
+          modalToggle.classList.remove('active');
+          modalToggle.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Xem MP4`;
+          modalToggle.onclick = () => {
+            _modalInMp4 = !_modalInMp4;
+            if (_modalInMp4) {
+              modalFrame.style.display = 'none';
+              modalPrev.style.display = 'none';
+              modalNext.style.display = 'none';
+              modalVideo.src = c.mp4Blob;
+              modalVideo.style.display = '';
+              modalVideo.play();
+              modalToggle.classList.add('active');
+              modalToggle.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Xem HTML`;
+              modalOpenNew.onclick = () => window.open(c.mp4Blob, '_blank');
+              modalDl.style.display = '';
+              modalDl.href = c.mp4Blob;
+              modalDl.download = c.mp4Name;
+            } else {
+              modalVideo.pause();
+              modalVideo.style.display = 'none';
+              modalFrame.src = htmlSrc;
+              modalFrame.style.display = '';
+              modalPrev.style.display = '';
+              modalNext.style.display = '';
+              modalToggle.classList.remove('active');
+              modalToggle.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Xem MP4`;
+              modalOpenNew.onclick = () => window.open(viewSrc, '_blank');
+              modalDl.style.display = 'none';
+            }
+          };
+          modalDl.style.display = 'none';
+        } else {
+          modalToggle.style.display = 'none';
+          modalDl.style.display = 'none';
+        }
+        modal.classList.add('open');
+      }
+
+      document.getElementById('modalClose').onclick = closeModal;
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      function closeModal() {
+        modal.classList.remove('open');
+        modalFrame.src = 'about:blank';
+        modalVideo.pause();
+        modalVideo.src = '';
+        modalVideo.style.display = 'none';
+        modalFrame.style.display = '';
+        _modalInMp4 = false;
+      }
+
+      refreshBtn.onclick = () => {
+        setPage(1, true);
+        scan();
+      };
+      searchInput.addEventListener('input', () => {
+        setPage(1, true);
+        render();
+      });
+      sortSelect.addEventListener('change', () => {
+        setPage(1, true);
+        render();
+      });
+      perPageSelect.addEventListener('change', () => {
+        LIMIT = perPageSelect.value;
+        setPage(1, true);
+        render();
+      });
+
+      // ══ Add Video Modal & Processing Controller ═══════════
+      const addVideoBtn = document.getElementById('addVideoBtn');
+      const addVideoModal = document.getElementById('addVideoModal');
+      const closeAddModalBtn = document.getElementById('closeAddModalBtn');
+      const pasteUrlBtn = document.getElementById('pasteUrlBtn');
+      const videoUrlInput = document.getElementById('videoUrlInput');
+      const videoLangSelect = document.getElementById('videoLangSelect');
+      const startProcessBtn = document.getElementById('startProcessBtn');
+      const progressContainer = document.getElementById('progressContainer');
+      const progressBarInner = document.getElementById('progressBarInner');
+      const progressPercent = document.getElementById('progressPercent');
+      const currentStepName = document.getElementById('currentStepName');
+      const progressLogs = document.getElementById('progressLogs');
+      const viewNewLessonBtn = document.getElementById('viewNewLessonBtn');
+
+      let currentTaskId = null;
+      let pollTimer = null;
+      let newLessonSlug = null;
+
+      function openAddModal() {
+        addVideoModal.classList.add('open');
+        setTimeout(() => videoUrlInput.focus(), 100);
+      }
+      function closeAddModal() {
+        if (currentTaskId && startProcessBtn.disabled) {
+          if (!confirm('Tiến trình tạo bài học đang chạy ngầm trên máy. Bạn có chắc muốn đóng cửa sổ?')) return;
+        }
+        addVideoModal.classList.remove('open');
+      }
+
+      if (addVideoBtn) addVideoBtn.onclick = openAddModal;
+      if (closeAddModalBtn) closeAddModalBtn.onclick = closeAddModal;
+      if (addVideoModal) {
+        addVideoModal.onclick = (e) => {
+          if (e.target === addVideoModal) closeAddModal();
+        };
+      }
+
+      if (pasteUrlBtn) {
+        pasteUrlBtn.onclick = async () => {
+          try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              videoUrlInput.value = text.trim();
+              videoUrlInput.focus();
+            }
+          } catch {
+            videoUrlInput.focus();
+          }
+        };
+      }
+
+      function updateStepper(percent) {
+        const s1 = document.getElementById('step1');
+        const s2 = document.getElementById('step2');
+        const s3 = document.getElementById('step3');
+        const s4 = document.getElementById('step4');
+
+        [s1, s2, s3, s4].forEach(s => { if (s) s.className = 'step-item pending'; });
+
+        if (percent < 25) {
+          if (s1) s1.className = 'step-item active';
+        } else if (percent < 75) {
+          if (s1) s1.className = 'step-item done';
+          if (s2) s2.className = 'step-item active';
+        } else if (percent < 95) {
+          if (s1) s1.className = 'step-item done';
+          if (s2) s2.className = 'step-item done';
+          if (s3) s3.className = 'step-item active';
+        } else {
+          if (s1) s1.className = 'step-item done';
+          if (s2) s2.className = 'step-item done';
+          if (s3) s3.className = 'step-item done';
+          if (s4) s4.className = 'step-item done';
+        }
+      }
+
+      if (startProcessBtn) {
+        startProcessBtn.onclick = async () => {
+          const url = videoUrlInput.value.trim();
+          if (!url) {
+            alert('Vui lòng nhập đường link video!');
+            videoUrlInput.focus();
+            return;
+          }
+
+          startProcessBtn.disabled = true;
+          videoUrlInput.disabled = true;
+          videoLangSelect.disabled = true;
+          progressContainer.style.display = 'flex';
+          viewNewLessonBtn.style.display = 'none';
+          progressBarInner.style.width = '5%';
+          progressPercent.textContent = '5%';
+          currentStepName.textContent = 'Đang gửi yêu cầu...';
+          progressLogs.innerHTML = '';
+          updateStepper(5);
+
+          try {
+            const res = await fetch('/api/process', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                url: url,
+                language: videoLangSelect.value
+              })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+              throw new Error(data.error || 'Lỗi server');
+            }
+
+            currentTaskId = data.task_id;
+            pollProgress();
+          } catch (err) {
+            alert('Không thể tạo bài học: ' + err.message);
+            startProcessBtn.disabled = false;
+            videoUrlInput.disabled = false;
+            videoLangSelect.disabled = false;
+          }
+        };
+      }
+
+      async function pollProgress() {
+        if (!currentTaskId) return;
+        try {
+          const res = await fetch(`/api/status?task_id=${currentTaskId}`);
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const pct = Math.max(5, data.percent || 0);
+          progressBarInner.style.width = pct + '%';
+          progressPercent.textContent = pct + '%';
+          currentStepName.textContent = data.step || 'Đang xử lý...';
+          updateStepper(pct);
+
+          if (data.logs && data.logs.length) {
+            progressLogs.innerHTML = data.logs.map(l => `<div>${l}</div>`).join('');
+            progressLogs.scrollTop = progressLogs.scrollHeight;
+          }
+
+          if (data.status === 'completed') {
+            currentTaskId = null;
+            newLessonSlug = data.result && data.result.slug;
+            currentStepName.textContent = '🎉 ' + (data.step || 'Hoàn tất!');
+            viewNewLessonBtn.style.display = 'flex';
+            startProcessBtn.disabled = false;
+            videoUrlInput.disabled = false;
+            videoLangSelect.disabled = false;
+            videoUrlInput.value = '';
+
+            // Tự động scan lại danh sách
+            await scan();
+
+            viewNewLessonBtn.onclick = () => {
+              addVideoModal.classList.remove('open');
+              if (newLessonSlug) {
+                const target = allClips.find(c => c.slug === newLessonSlug);
+                if (target) {
+                  const url = new URL(location.href);
+                  url.searchParams.set('slug', newLessonSlug);
+                  history.pushState(null, '', url);
+                  applyRoute();
+                }
+              }
+            };
+            return;
+          }
+
+          if (data.status === 'error') {
+            currentTaskId = null;
+            currentStepName.textContent = '❌ Thất bại: ' + (data.error || 'Có lỗi xảy ra');
+            startProcessBtn.disabled = false;
+            videoUrlInput.disabled = false;
+            videoLangSelect.disabled = false;
+            return;
+          }
+
+          pollTimer = setTimeout(pollProgress, 1200);
+        } catch (e) {
+          pollTimer = setTimeout(pollProgress, 2000);
+        }
+      }
+    </script>
+  </body>
+</html>

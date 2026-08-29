@@ -1,0 +1,18 @@
+# Video và media (dung lượng lớn)
+output/
+
+# Python
+scripts/.venv/
+scripts/__pycache__/
+*.pyc
+
+# Deployment (chỉ dùng nội bộ)
+deployment/
+
+# Node
+.env
+manifest.json
+
+# macOS
+.DS_Store
+README.md
