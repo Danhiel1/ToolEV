@@ -13,6 +13,19 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 
+try:
+    from vocab_service import extract_key_vocabulary
+except Exception:
+    extract_key_vocabulary = None
+
+try:
+    from logger import get_logger
+    logger = get_logger("generate_ielts")
+except Exception:
+    import logging
+    logger = logging.getLogger("toolev.generate_ielts")
+
+
 # Windows encoding fix
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -149,7 +162,7 @@ Question Requirements:
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"}
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=15) as resp:
         res_data = json.loads(resp.read().decode("utf-8"))
         cand_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
         data = json.loads(cand_text)
@@ -274,35 +287,44 @@ def generate_offline_heuristic(title: str, slug: str, youtube_id: str, segments:
     return result
 
 
-def generate_ielts_for_slug(slug_dir: str, title: str = None, youtube_id: str = None) -> dict:
+def generate_ielts_for_slug(slug_dir: str, title: str = None, youtube_id: str = None, max_vocab: int = 15) -> dict:
     slug = os.path.basename(os.path.normpath(slug_dir))
     if not title:
         title = slug.replace("_", " ")
-        
+
     segments, source = load_transcript(slug_dir)
     if not segments:
-        sys.stderr.write(f"No transcript segments found in {slug_dir}/parts\n")
-        
+        logger.warning(f"No transcript segments found in {slug_dir}/parts")
+
     api_key = os.environ.get("GEMINI_API_KEY")
     result = None
-    
+
     if api_key and segments:
         try:
-            sys.stderr.write("Generating IELTS questions using Gemini API...\n")
+            logger.info(f"Generating IELTS questions using Gemini API for '{title}'...")
             result = generate_with_gemini(api_key, title, slug, youtube_id, segments, source)
         except Exception as e:
-            sys.stderr.write(f"Gemini API generation failed ({e}), falling back to offline heuristic...\n")
-            
+            logger.warning(f"Gemini API generation failed ({e}), falling back to offline heuristic...")
+
     if not result:
-        sys.stderr.write("Generating IELTS questions with offline NLP engine...\n")
+        logger.info(f"Generating IELTS questions with offline NLP engine for '{title}'...")
         result = generate_offline_heuristic(title, slug, youtube_id, segments, source)
-        
+
+    if segments and extract_key_vocabulary and not result.get("vocabulary"):
+        try:
+            logger.info(f"Extracting {max_vocab} key vocabulary items for '{title}'...")
+            result["vocabulary"] = extract_key_vocabulary(segments, max_words=max_vocab)
+        except Exception as e:
+            logger.error(f"Vocab extraction error: {e}", exc_info=True)
+            result["vocabulary"] = []
+
     out_file = os.path.join(slug_dir, "ielts_listening.json")
     with open(out_file, "w", encoding="utf-8") as fp:
         json.dump(result, fp, ensure_ascii=False, indent=2)
-        
-    sys.stderr.write(f"Generated {len(result.get('questions', []))} IELTS questions -> {out_file}\n")
+
+    logger.info(f"Generated {len(result.get('questions', []))} IELTS questions & {len(result.get('vocabulary', []))} vocabulary items -> {out_file}")
     return result
+
 
 
 if __name__ == "__main__":
